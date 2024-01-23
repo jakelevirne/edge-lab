@@ -62,6 +62,9 @@ ssh -J pi@pi0.local pi@pi1.local
 ping 192.168.87.1
 # ping external site from pi1
 ping www.cnn.com
+#update pi1
+sudo apt update
+sudo apt upgrade
 ```
 
 
