@@ -30,7 +30,9 @@ sudo netfilter-persistent save
 # install dhcp server
 sudo apt install dnsmasq
 # Edit /etc/dnsmasq.conf
-# Add or uncomment and edit the following lines
+# first move the existing one. it only contains comments.
+mv /etc/dnsmasq.conf /etc/dnsmasq.BAK.conf
+# Add the following lines to a new blank /etc/dnsmasq.conf
 interface=eth0
 dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
 
