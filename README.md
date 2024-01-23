@@ -41,6 +41,9 @@ dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
 sudo systemctl restart dnsmasq
 # apply all configurations
 sudo systemctl restart NetworkManager
+
+#TODO: IPv6
+#chatglpt prompt: I'm following these steps to configure my headless raspberry pi as a router. Do I need to do anything differently if I also want everything to work for ipv6?. And then paste in all of the above.
 ```
 
 
