@@ -1,5 +1,6 @@
 # pi5cluster
 
+## pi0 - router
 Use the Raspberry Pi imager to image pi0.local
 - Device: Raspberry Pi 5, OS: Raspberry Pi OS Lite (64-bit), Storage: SD card
 - Edit Settings
@@ -56,7 +57,7 @@ sudo systemctl restart NetworkManager
 ```
 
 
-
+## pi1 .. piN cluster servers
 
 Use the Raspberry Pi imager to image pi1.local through piN.local
 - Follow the same steps as above, but uncheck Configure wireless lan
@@ -80,5 +81,7 @@ sudo apt update
 sudo apt upgrade
 ```
 
+## Benchmarking
 
+https://www.tomshardware.com/how-to/raspberry-pi-benchmark-vcgencmd
   
