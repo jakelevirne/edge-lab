@@ -32,6 +32,7 @@ sudo apt install dnsmasq
 # Edit /etc/dnsmasq.conf
 # first move the existing one. it only contains comments.
 mv /etc/dnsmasq.conf /etc/dnsmasq.BAK.conf
+sudo nano /etc/dnsmasq.conf
 # Add the following lines to a new blank /etc/dnsmasq.conf
 interface=eth0
 dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
