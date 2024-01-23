@@ -84,4 +84,83 @@ sudo apt upgrade
 ## Benchmarking
 
 https://www.tomshardware.com/how-to/raspberry-pi-benchmark-vcgencmd
-  
+
+## NAS
+On pi0.local:
+Step 1: Identify the USB Drive
+Insert the USB drive into the Raspberry Pi.
+Open a terminal and list all connected disks:
+bash
+Copy code
+sudo fdisk -l
+Identify your USB drive (e.g., /dev/sda or /dev/sdb).
+Step 2: Format the USB Drive
+Format the USB drive as ext4 (replace /dev/sdX1 with your actual device):
+bash
+Copy code
+sudo mkfs.ext4 /dev/sdX1
+Wait for the process to complete.
+Step 3: Create a Mount Point
+Create a directory to mount your USB drive:
+bash
+Copy code
+sudo mkdir /mnt/nas
+Step 4: Mount the USB Drive
+Mount the USB drive:
+bash
+Copy code
+sudo mount /dev/sdX1 /mnt/nas
+To automatically mount the drive on boot, edit /etc/fstab:
+bash
+Copy code
+sudo nano /etc/fstab
+Add a line for the USB drive:
+bash
+Copy code
+/dev/sdX1 /mnt/nas ext4 defaults 0 2
+Save and close the file.
+Step 5: Install NFS Server
+Install the NFS server package:
+bash
+Copy code
+sudo apt update
+sudo apt install nfs-kernel-server
+Step 6: Configure NFS Export
+Edit the NFS export file:
+bash
+Copy code
+sudo nano /etc/exports
+Add the following line to share the drive:
+bash
+Copy code
+/mnt/nas <network>(rw,sync,no_subtree_check)
+Replace <network> with your network range, e.g., 192.168.87.0/24.
+Apply the export settings:
+bash
+Copy code
+sudo exportfs -ra
+Step 7: Adjust Permissions and Ownership
+Set the appropriate permissions:
+bash
+Copy code
+sudo chown -R pi:pi /mnt/nas
+sudo chmod -R 755 /mnt/nas
+Replace pi:pi with your desired user and group.
+Step 8: Restart and Enable NFS
+Restart the NFS service:
+bash
+Copy code
+sudo systemctl restart nfs-kernel-server
+Enable NFS to start on boot:
+bash
+Copy code
+sudo systemctl enable nfs-kernel-server
+Step 9: Accessing the Shared Drive from Client Machines
+On a client Linux machine, create a mount point:
+bash
+Copy code
+sudo mkdir /mnt/nas
+Mount the shared drive (replace RASPBERRYPI_IP with your Raspberry Pi's IP address):
+bash
+Copy code
+sudo mount RASPBERRYPI_IP:/mnt/nas /mnt/nas
