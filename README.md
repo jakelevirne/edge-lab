@@ -17,9 +17,9 @@ sudo apt upgrade
 # use NetworkManager, which is installed by default on Raspberry Pi OS
 nmcli device status
 # Configure the LAN interface assuming eth0 is your LAN interface.
-nmcli con add type ethernet con-name lan ifname eth0
-nmcli con modify lan ipv4.addresses '192.168.87.1/24'
-nmcli con modify lan ipv4.method manual
+sudo nmcli con add type ethernet con-name lan ifname eth0
+sudo nmcli con modify lan ipv4.addresses '192.168.87.1/24'
+sudo nmcli con modify lan ipv4.method manual
 # enable ip forwarding
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
