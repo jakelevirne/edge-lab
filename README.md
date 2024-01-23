@@ -36,6 +36,15 @@ sudo nano /etc/dnsmasq.conf
 # Add the following lines to a new blank /etc/dnsmasq.conf
 interface=eth0
 dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
+# check locale and datetime
+locale
+# run if wrong:
+sudo dpkg-reconfigure locales
+# check timezone
+timedatectl
+# change timezone if wrong:
+sudo timedatectl set-timezone America/New_York
+
 
 # restart dnsmasq
 sudo systemctl restart dnsmasq
