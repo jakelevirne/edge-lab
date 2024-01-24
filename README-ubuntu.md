@@ -15,12 +15,4 @@ network:
       dhcp6: no
       addresses: [192.168.87.1/24]
       accept-ra: no
-  wifis:
-    wlan0:
-      dhcp4: yes
-      dhcp6: yes
-      accept-ra: yes
-      access-points:
-        "Your_WiFi_SSID":
-          password: "Your_WiFi_Password"
 ```
