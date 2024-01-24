@@ -63,3 +63,66 @@ Contents should be:
 INTERFACESv4="eth0"
 INTERFACESv6="eth0"
 ```
+
+```
+sudo systemctl restart isc-dhcp-server
+sudo systemctl enable isc-dhcp-server
+```
+
+Configure NAT and firewall rules
+(nftables nft command is already installed by default in Ubunut 23)
+
+```
+sudo nano /etc/nftables.conf
+```
+
+Ensure contents contains:
+```
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+        # Allow localhost traffic
+        iif lo accept
+        # Allow established and related traffic
+        ct state established,related accept
+        # Drop invalid packets
+        ct state invalid drop
+        # Your additional input rules here (e.g., allow SSH)
+        # tcp dport 22 accept
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+        # Allow forwarding from eth0 to wlan0
+        iif eth0 oif wlan0 accept
+        # Allow established and related connections back into eth0
+        iif wlan0 oif eth0 ct state established,related accept
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+    }
+}
+
+table ip nat {
+    chain prerouting {
+        type nat hook prerouting priority -100;
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority 100;
+        # Masquerade traffic going out of wlan0
+        oif "wlan0" masquerade
+    }
+}
+```
+
+Apply and verify the configuration:
+```
+sudo nft -f /etc/nftables.conf
+sudo nft list ruleset
+```
+
+```
