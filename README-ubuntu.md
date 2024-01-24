@@ -37,3 +37,29 @@ Apply the changes with:
 sudo sysctl -p
 ```
 
+For DHCP:
+```
+sudo apt update
+sudo apt install isc-dhcp-server
+```
+Configure the DHCP server
+```
+sudo nano /etc/dhcp/dhcpd.conf
+```
+Contents should be:
+```
+subnet 192.168.87.0 netmask 255.255.255.0 {
+  range 192.168.87.10 192.168.87.100;
+  option domain-name-servers 8.8.8.8, 8.8.4.4;
+  option routers 192.168.87.1;
+}
+
+```
+```
+sudo nano /etc/default/isc-dhcp-server
+```
+Contents should be:
+```
+INTERFACESv4="eth0"
+INTERFACESv6="eth0"
+```
