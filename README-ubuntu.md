@@ -50,7 +50,8 @@ Contents should be:
 ```
 subnet 192.168.87.0 netmask 255.255.255.0 {
   range 192.168.87.10 192.168.87.100;
-  option domain-name-servers 8.8.8.8, 8.8.4.4;
+# the home router
+  option domain-name-servers 192.168.86.1;
   option routers 192.168.87.1;
 }
 
