@@ -15,6 +15,14 @@ pi0 will be setup as the router, as follows:
 ```
 sudo apt update
 sudo apt upgrade
+# check locale and datetime
+locale
+# run if wrong:
+sudo dpkg-reconfigure locales
+# check timezone
+timedatectl
+# change timezone if wrong:
+sudo timedatectl set-timezone America/New_York
 # use NetworkManager, which is installed by default on Raspberry Pi OS
 nmcli device status
 # Configure the LAN interface assuming eth0 is your LAN interface.
@@ -37,14 +45,7 @@ sudo nano /etc/dnsmasq.conf
 # Add the following lines to a new blank /etc/dnsmasq.conf
 interface=eth0
 dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
-# check locale and datetime
-locale
-# run if wrong:
-sudo dpkg-reconfigure locales
-# check timezone
-timedatectl
-# change timezone if wrong:
-sudo timedatectl set-timezone America/New_York
+
 
 
 # restart dnsmasq
@@ -61,6 +62,7 @@ sudo systemctl restart NetworkManager
 
 Use the Raspberry Pi imager to image pi1.local through piN.local
 - Follow the same steps as above, but uncheck Configure wireless lan
+- Stop before the NetworkManager step
 - Connect this pi to the same switch as pi0 and power up
 
 Test as follows:
