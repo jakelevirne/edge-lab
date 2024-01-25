@@ -10,6 +10,18 @@ Use the Raspberry Pi imager to image pi0.local
   - Set locale settings
   - Under Services, enable SSH, allow public-key auth only, and paste in public key
 
+Before using it, enable USB boot even on 3A power:
+```
+nano /Volumes/bootfs/config.txt
+```
+
+paste the following lines in to the existing file:
+```
+# allow usb boot even on 3a power
+usb_max_current_enable=1
+```
+
+
 pi0 will be setup as the router, as follows:
 
 ```
