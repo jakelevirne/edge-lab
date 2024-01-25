@@ -178,6 +178,8 @@ sudo reboot
 
 Install microk8s
 Follow instructions here: https://microk8s.io/docs/install-raspberry-pi
+
 And here: https://microk8s.io/docs/getting-started
+
 But install 1.28 instead of 1.29
 
