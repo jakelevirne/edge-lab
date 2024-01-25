@@ -183,3 +183,14 @@ And here: https://microk8s.io/docs/getting-started
 
 But install 1.28 instead of 1.29
 
+```
+microk8s kubectl get nodes
+microk8s kubectl create deployment nginx --image=nginx
+microk8s kubectl get pods
+microk8s kubectl expose deployment nginx --type="NodePort" --port 80
+microk8s kubectl get svc nginx-webserver
+```
+Now you can see the nginx page by using `curl` to hit one of the nodes on the port shown by `get svc`
+
+
+
