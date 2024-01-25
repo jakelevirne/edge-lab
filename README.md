@@ -166,3 +166,18 @@ Mount the shared drive (replace RASPBERRYPI_IP with your Raspberry Pi's IP addre
 bash
 Copy code
 sudo mount RASPBERRYPI_IP:/mnt/nas /mnt/nas
+
+## MicroK8s
+Install snap
+```
+sudo apt update
+sudo apt install snapd
+sudo systemctl enable snapd
+sudo reboot
+```
+
+Install microk8s
+Follow instructions here: https://microk8s.io/docs/install-raspberry-pi
+And here: https://microk8s.io/docs/getting-started
+But install 1.28 instead of 1.29
+
