@@ -53,8 +53,20 @@ sudo systemctl restart dnsmasq
 # apply all configurations
 sudo systemctl restart NetworkManager
 
+# Static IPs
+cat /var/lib/misc/dnsmasq.leases
+sudo nano /etc/dnsmasq.conf
+# Add lines that look like:
+# pi1
+dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
+
+# pi2
+dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
+
+
+
 #TODO: IPv6
-#chatglpt prompt: I'm following these steps to configure my headless raspberry pi as a router. Do I need to do anything differently if I also want everything to work for ipv6?. And then paste in all of the above.
+#chatgpt prompt: I'm following these steps to configure my headless raspberry pi as a router. Do I need to do anything differently if I also want everything to work for ipv6?. And then paste in all of the above.
 ```
 
 
