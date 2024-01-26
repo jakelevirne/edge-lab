@@ -136,3 +136,52 @@ Disk stats (read/write):
   sda: ios=1145655/1146849, merge=0/0, ticks=3412119/3411136, in_queue=6823505, util=100.00%
 
 ```
+#### PiBenchmarks.com test
+```
+Running fio write test ...
+Running fio read test ...
+FIO results - 4k RandWrite: 32302 IOPS (129211 KB/s) - 4k RandRead: 41124 IOPS (164497 KB/s)
+Running iozone test ...
+	Iozone: Performance Test of File I/O
+	        Version $Revision: 3.489 $
+		Compiled for 64 bit mode.
+		Build: linux 
+	Run began: Fri Jan 26 12:35:59 2024
+	Auto Mode
+	Include fsync in write timing
+	O_DIRECT feature enabled
+	File size set to 81920 kB
+	Record Size 4 kB
+	Command line used: iozone -a -e -I -i 0 -i 1 -i 2 -s 80M -r 4k
+	Output is in kBytes/sec
+	Time Resolution = 0.000001 seconds.
+	Processor cache size set to 1024 kBytes.
+	Processor cache line size set to 32 bytes.
+	File stride size set to 17 * record size.
+                                                              random    random     bkwd    record    stride                                    
+              kB  reclen    write  rewrite    read    reread    read     write     read   rewrite      read   fwrite frewrite    fread  freread
+           81920       4    38163    40607    18900    18890    20223    40434                                                                
+iozone test complete.
+RandRead: 20223 - RandWrite: 40434 - Read: 18900 - Write: 38163
+Enter a description of your storage and setup (Example: Kingston A400 SSD on Pi 4 using StarTech SATA to USB adapter)
+Description: Samsung T7 on Raspberry Pi 5
+(Optional) Enter alias to use on benchmark results.  Leave blank for completely anonymous.
+Alias (leave blank for Anonymous): 
+Result submitted successfully and will appear live on https://pibenchmarks.com within a couple of minutes.
+
+     Category                  Test                      Result     
+HDParm                    Disk Read                 367.10 MB/sec            
+HDParm                    Cached Disk Read          358.36 MB/sec            
+DD                        Disk Write                257 MB/s                 
+FIO                       4k random read            41124 IOPS (164497 KB/s) 
+FIO                       4k random write           32302 IOPS (129211 KB/s) 
+IOZone                    4k read                   18900 KB/s               
+IOZone                    4k write                  38163 KB/s               
+IOZone                    4k random read            20223 KB/s               
+IOZone                    4k random write           40434 KB/s               
+
+                          Score: 12929                                       
+
+Compare with previous benchmark results at:
+https://pibenchmarks.com/
+```
