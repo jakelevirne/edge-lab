@@ -136,7 +136,7 @@ Disk stats (read/write):
   sda: ios=1145655/1146849, merge=0/0, ticks=3412119/3411136, in_queue=6823505, util=100.00%
 
 ```
-#### PiBenchmarks.com test
+#### PiBenchmarks.com test for Samsung T7 USB
 From https://github.com/TheRemote/PiBenchmarks, ran:
 `sudo ./Storage.sh ~/mnt/sda2/`
 
@@ -188,4 +188,60 @@ IOZone                    4k random write           40434 KB/s
 
 Compare with previous benchmark results at:
 https://pibenchmarks.com/
+```
+
+
+#### PiBenchmarks.com test for Amazon Basics SD
+From https://github.com/TheRemote/PiBenchmarks, ran:
+`sudo ./Storage.sh ~/mnt/mmcblk0p2/`
+
+https://pibenchmarks.com/benchmark/78375/
+```
+Running fio write test ...
+Running fio read test ...
+FIO results - 4k RandWrite: 1814 IOPS (7259 KB/s) - 4k RandRead: 5920 IOPS (23683 KB/s)
+Running iozone test ...
+	Iozone: Performance Test of File I/O
+	        Version $Revision: 3.489 $
+		Compiled for 64 bit mode.
+		Build: linux 
+	Run began: Fri Jan 26 16:40:06 2024
+	Auto Mode
+	Include fsync in write timing
+	O_DIRECT feature enabled
+	File size set to 81920 kB
+	Record Size 4 kB
+	Command line used: iozone -a -e -I -i 0 -i 1 -i 2 -s 80M -r 4k
+	Output is in kBytes/sec
+	Time Resolution = 0.000001 seconds.
+	Processor cache size set to 1024 kBytes.
+	Processor cache line size set to 32 bytes.
+	File stride size set to 17 * record size.
+                                                              random    random     bkwd    record    stride                                    
+              kB  reclen    write  rewrite    read    reread    read     write     read   rewrite      read   fwrite frewrite    fread  freread
+           81920       4     6733     3506    22704    22561    15773     6211                                                                
+iozone test complete.
+RandRead: 15773 - RandWrite: 6211 - Read: 22704 - Write: 6733
+Enter a description of your storage and setup (Example: Kingston A400 SSD on Pi 4 using StarTech SATA to USB adapter)
+Description: Amazon Basics SD on Pi 5
+(Optional) Enter alias to use on benchmark results.  Leave blank for completely anonymous.
+Alias (leave blank for Anonymous): 
+Result submitted successfully and will appear live on https://pibenchmarks.com within a couple of minutes.
+
+     Category                  Test                      Result     
+HDParm                    Disk Read                 88.82 MB/sec             
+HDParm                    Cached Disk Read          89.22 MB/sec             
+DD                        Disk Write                62.2 MB/s                
+FIO                       4k random read            5920 IOPS (23683 KB/s)   
+FIO                       4k random write           1814 IOPS (7259 KB/s)    
+IOZone                    4k read                   22704 KB/s               
+IOZone                    4k write                  6733 KB/s                
+IOZone                    4k random read            15773 KB/s               
+IOZone                    4k random write           6211 KB/s                
+
+                          Score: 2601                                        
+
+Compare with previous benchmark results at:
+https://pibenchmarks.com/
+
 ```
