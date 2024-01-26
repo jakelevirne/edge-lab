@@ -137,6 +137,8 @@ Disk stats (read/write):
 
 ```
 #### PiBenchmarks.com test
+From https://github.com/TheRemote/PiBenchmarks, ran:
+`sudo ./Storage.sh ~/mnt/sda2/`
 ```
 Running fio write test ...
 Running fio read test ...
