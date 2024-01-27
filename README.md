@@ -238,4 +238,9 @@ ff02::2		ip6-allrouters
 
 192.168.86.200	pi0
 ```
+Continue following steps from https://github.com/jiangcuo/Proxmox-Port/wiki/Install-Proxmox-VE-on-Debian-bookworm, using `sudo`. ChatGPT for the Add the Proxmox VE Repo suggests this instead, which seemed to work:
+```
+sudo sh -c 'echo "deb [arch=arm64] https://mirrors.apqa.cn/proxmox/debian/pve bookworm port" > /etc/apt/sources.list.d/pveport.list'
+```
+
 
