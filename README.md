@@ -223,6 +223,12 @@ https://github.com/jiangcuo/Proxmox-Port
 # in config.txt:
 kernel=kernel8.img
 ```
+```
+# in cmdline.txt, add to the end of the line:
+cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
+```
+
+
 Modify `/etc/hosts` like:
 ```
 127.0.0.1	localhost
@@ -232,6 +238,4 @@ ff02::2		ip6-allrouters
 
 192.168.86.200	pi0
 ```
-```
-# in cmdline.txt, add to the end of the line:
-cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
+
