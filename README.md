@@ -220,6 +220,9 @@ Now you can see the nginx page by using `curl` to hit one of the nodes on the po
 https://github.com/jiangcuo/Proxmox-Port
 
 ```
+sudo mkdir -p ~/mnt/mmcblk0p1
+sudo mount /dev/mmcblk0p1 ~/mnt/mmcblk0p1
+
 # in config.txt:
 kernel=kernel8.img
 ```
