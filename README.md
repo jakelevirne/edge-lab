@@ -270,4 +270,11 @@ sudo apt install ifupdown2
 sudo apt install proxmox-ve postfix open-iscsi
 ```
 
+Configure port 8006 forwarding from pi0 to pi1 for proxmox admin UI
+```
+sudo iptables -t nat -A PREROUTING -p tcp --dport 8006 -j DNAT --to-destination 192.168.87.101:8006
+sudo iptables -A FORWARD -p tcp -d 192.168.87.101 --dport 8006 -j ACCEPT
+sudo netfilter-persistent save
+```
+
 
