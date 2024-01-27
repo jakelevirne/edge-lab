@@ -241,9 +241,30 @@ ff02::2		ip6-allrouters
 
 REBOOT
 
-Continue following steps from https://github.com/jiangcuo/Proxmox-Port/wiki/Install-Proxmox-VE-on-Debian-bookworm, using `sudo`. ChatGPT for the Add the Proxmox VE Repo suggests this instead, which seemed to work:
+Test
+```
+hostname --ip-address
+```
+Should return your IP address
+
+Set your root password (this is what proxmox uses for it's initial admin user)
+```
+sudo su
+passwd
+```
+
+
+Continue following steps from https://github.com/jiangcuo/Proxmox-Port/wiki/Install-Proxmox-VE-on-Debian-bookworm, using `sudo`, like this:
 ```
 sudo sh -c 'echo "deb [arch=arm64] https://mirrors.apqa.cn/proxmox/debian/pve bookworm port" > /etc/apt/sources.list.d/pveport.list'
+
+sudo curl https://mirrors.apqa.cn/proxmox/debian/pveport.gpg -o /etc/apt/trusted.gpg.d/pveport.gpg
+
+sudo apt update && apt full-upgrade
+
+sudo apt install ifupdown2
+
+sudo apt install proxmox-ve postfix open-iscsi
 ```
 
 
