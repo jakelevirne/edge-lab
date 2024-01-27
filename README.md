@@ -263,7 +263,7 @@ sudo sh -c 'echo "deb [arch=arm64] https://mirrors.apqa.cn/proxmox/debian/pve bo
 
 sudo curl https://mirrors.apqa.cn/proxmox/debian/pveport.gpg -o /etc/apt/trusted.gpg.d/pveport.gpg
 
-sudo apt update && apt full-upgrade
+sudo apt update && sudo apt full-upgrade
 
 sudo apt install ifupdown2
 
