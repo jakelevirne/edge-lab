@@ -216,5 +216,11 @@ microk8s kubectl get svc nginx
 ```
 Now you can see the nginx page by using `curl` to hit one of the nodes on the port shown by `get svc`
 
-
-
+## Proxmox
+```
+# in config.txt:
+kernel=kernel8.img
+```
+```
+# in cmdline.txt, add to the end of the line:
+cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
