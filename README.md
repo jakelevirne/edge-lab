@@ -91,7 +91,7 @@ Use the Raspberry Pi imager to image pi1.local through piN.local
 
 Test as follows:
 ```
-ssh pi@pi1.local
+ssh pi@pi0.local
 # check the dhcp leases
 cat /var/lib/misc/dnsmasq.leases
 ping <ip-address-of-pi1>
