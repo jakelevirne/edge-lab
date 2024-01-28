@@ -268,7 +268,31 @@ sudo apt update && sudo apt full-upgrade
 sudo apt install ifupdown2
 
 sudo apt install proxmox-ve postfix open-iscsi
+
+# Disable NetworkManager
+sudo systemctl stop NetworkManager
+sudo systemctl disable NetworkManager
+
+sudo nano /etc/network/interfaces
 ```
+Make it look like this (https://pve.proxmox.com/wiki/Network_Configuration):
+```
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet manual
+
+auto vmbr0
+iface vmbr0 inet static
+	address 192.168.87.101/24
+	gateway 192.168.87.1
+	bridge-ports eth0
+	bridge-stp off
+	bridge-fd 0
+
+```
+REBOOT
 
 Configure port 8006 forwarding from pi0 to pi1 for proxmox admin UI
 ```
