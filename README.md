@@ -301,4 +301,8 @@ sudo iptables -A FORWARD -p tcp -d 192.168.87.101 --dport 8006 -j ACCEPT
 sudo netfilter-persistent save
 ```
 
-
+### Running a VM
+https://github.com/jiangcuo/Proxmox-Arm64/wiki/Qemu-VM
+Tips:
+- OVMF UEFI
+- recommend configured virtio-scsi-pci (VirtIO SCSI)
