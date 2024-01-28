@@ -21,8 +21,3 @@ I hope this helps! Let me know if you have any other questions.
 
 
 ![picture 0](images/11b627a94e78864de4e06d702957913dafd3a18202ac2828affc716190be3957.png)  
-
-
-Here is an inline equation \( \binom{n}{r} = \frac{n!}{r!(n-r)!} \)
-
-
