@@ -126,4 +126,4 @@ sudo nft -f /etc/nftables.conf
 sudo nft list ruleset
 ```
 
-```
+
