@@ -18,12 +18,8 @@ The above code prompts the user to enter the number of terms they want in the Fi
 
 I hope this helps! Let me know if you have any other questions.
 
-Source: Conversation with Bing, 1/28/2024
-(1) JavaScript Program to Print the Fibonacci Sequence. https://www.programiz.com/javascript/examples/fibonacci-series.
-(2) Fibonacci Js For Loop - Computer Science Hub. https://computersciencehub.io/javascript/fibonacci-js-for-loop/.
-(3) How to calculate the Fibonacci series in JavaScript - GeeksforGeeks. https://www.geeksforgeeks.org/how-to-calculate-the-fibonacci-series-in-javascript/.
-(4) Generating and Printing Fibonacci Series in JavaScript - W3Schools. https://www.w3schools.in/javascript/examples/print-fibonacci-series.
-(5) JavaScript Program to print Fibonacci Series - GeeksforGeeks. https://www.geeksforgeeks.org/javascript-program-to-print-fibonacci-series/.
-(6) github.com. https://github.com/code-whits/code-whits-javascript/tree/785da30d6e9bb78814a029ccb35786b0c01f7c3b/lib%2FPrint%20the%20Fibonacci%20Sequence.js.
-(7) github.com. https://github.com/nishtha53/js-functions-/tree/48656db1051ced9484300906d48706ffc7708529/functions.js.
-(8) github.com. https://github.com/giatk/own-npm-lib/tree/d959579c9ce2ff61f523ac1ca8c774050228e1da/index.js.
+
+
+![picture 0](images/11b627a94e78864de4e06d702957913dafd3a18202ac2828affc716190be3957.png)  
+
+
