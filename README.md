@@ -147,6 +147,10 @@ sudo systemctl enable nfs-kernel-server
 # Apply the export settings
 sudo exportfs -a
 ```
+#### Note: mounting from Mac required the `resvport` option
+```
+sudo mount -t nfs -o resvport 192.168.86.5:/mnt/nfsnas ~/dev/nfsnas
+```
 
 
 
