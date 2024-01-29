@@ -134,6 +134,20 @@ sudo nano /etc/fstab
 # Add this line to the end of the file
 /dev/ubuntu-vg/nfs-lv /mnt/nfsnas ext4 defaults 0 2
 ```
+Install and configure the NFS server:
+```
+sudo apt install nfs-kernel-server
+sudo nano /etc/exports
+# Add this line to the file
+/mnt/nfsnas 192.168.86.0/24(rw,sync,no_subtree_check)
+
+# start and enable the server
+sudo systemctl start nfs-kernel-server
+sudo systemctl enable nfs-kernel-server
+# Apply the export settings
+sudo exportfs -a
+```
+
 
 
 ## Proxmox
