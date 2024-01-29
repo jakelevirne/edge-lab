@@ -139,7 +139,7 @@ Install and configure the NFS server:
 sudo apt install nfs-kernel-server
 sudo nano /etc/exports
 # Add this line to the file
-/mnt/nfsnas 192.168.86.0/24(rw,sync,no_subtree_check)
+/mnt/nfsnas *(rw,sync,no_subtree_check)
 
 # start and enable the server
 sudo systemctl start nfs-kernel-server
