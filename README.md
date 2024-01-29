@@ -129,6 +129,7 @@ Create, format, and permanently mount the new logical volume:
 sudo lvcreate -n nfs-lv -L 1.5T ubuntu-vg
 sudo mkfs.ext4 /dev/ubuntu-vg/nfs-lv
 sudo mkdir /mnt/nfsnas
+sudo chmod 777 /mnt/nfsnas
 sudo mount /dev/ubuntu-vg/nfs-lv /mnt/nfsnas
 sudo nano /etc/fstab
 # Add this line to the end of the file
@@ -147,6 +148,19 @@ sudo systemctl enable nfs-kernel-server
 # Apply the export settings
 sudo exportfs -a
 ```
+#### Permanently mount from one of the pis
+```
+sudo mkdir -p /mnt/nfsnas
+sudo nano /etc/fstab
+# Add this line
+192.168.86.5:/mnt/nfsnas /mnt/nfsnas nfs defaults 0 0
+
+
+sudo mount -a
+df -h
+
+```
+
 #### Note: mounting from Mac required the `resvport` option
 ```
 sudo mount -t nfs -o resvport 192.168.86.5:/mnt/nfsnas ~/dev/nfsnas
