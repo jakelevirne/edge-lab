@@ -86,8 +86,21 @@ dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
 
 Use the Raspberry Pi imager to image pi1.local through piN.local
 - Follow the same steps as above, but uncheck Configure wireless lan
-- Stop before the NetworkManager step
-- Connect this pi to the same switch as pi0 and power up
+
+Connect this pi to the same switch as pi0 and power up
+
+```
+sudo apt update
+sudo apt upgrade
+# check locale and datetime
+locale
+# run if wrong:
+sudo dpkg-reconfigure locales
+# check timezone
+timedatectl
+# change timezone if wrong:
+sudo timedatectl set-timezone America/New_York
+```
 
 Test as follows:
 ```
