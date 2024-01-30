@@ -90,6 +90,8 @@ Use the Raspberry Pi imager to image pi1.local through piN.local
 Connect this pi to the same switch as pi0 and power up
 
 ```
+# from laptop, proxyjump to pi1
+ssh -J pi@pi0.local pi@pi1.local
 sudo apt update
 sudo apt upgrade
 # check locale and datetime
@@ -109,8 +111,8 @@ ssh pi@pi0.local
 cat /var/lib/misc/dnsmasq.leases
 ping <ip-address-of-pi1>
 exit
-# from laptop, proxyjump to pi1
-ssh -J pi@pi0.local pi@pi1.local
+```
+```
 # ping router from pi1
 ping 192.168.87.1
 # ping external site from pi1
