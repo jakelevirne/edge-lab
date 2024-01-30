@@ -103,6 +103,14 @@ timedatectl
 # change timezone if wrong:
 sudo timedatectl set-timezone America/New_York
 ```
+Disable Wifi
+```
+sudo nano /boot/firmware/config.txt
+# paste the following line
+dtoverlay=disable-wifi
+# Save, then reboot
+sudo reboot
+```
 
 Test as follows:
 ```
@@ -117,9 +125,6 @@ exit
 ping 192.168.87.1
 # ping external site from pi1
 ping www.cnn.com
-#update pi1
-sudo apt update
-sudo apt upgrade
 ```
 
 ## Benchmarking
