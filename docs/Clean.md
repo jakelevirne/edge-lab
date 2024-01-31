@@ -146,4 +146,12 @@ sudo parted /dev/sda
 # quit
 sudo resize2fs /dev/sda2
 ```
-
+SSH into pi0 and make sure this machine has a reserved IP
+```
+# In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
+cat /var/lib/misc/dnsmasq.leases
+sudo nano /etc/dnsmasq.conf
+# Add lines that look like:
+# pi1
+dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
+```
