@@ -23,7 +23,7 @@ usb_max_current_enable=1
 Or better yet, after SSHing into pi0, change the EEPROM [bootloader config](https://forums.raspberrypi.com/viewtopic.php?t=359453) to always allow usb boot even on 3a power:
 ```
 sudo rpi-eeprom-config --edit
-# Edit it to look like this (USB preferred boot order and USB max current enabled):
+# Edit it to look like this (USB preferred [boot order](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER) and USB max current enabled):
 [all]
 BOOT_UART=1
 BOOT_ORDER=0xf146
