@@ -66,6 +66,7 @@ sudo systemctl restart dnsmasq
 sudo systemctl restart NetworkManager
 
 # Static IPs
+# In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
 cat /var/lib/misc/dnsmasq.leases
 sudo nano /etc/dnsmasq.conf
 # Add lines that look like:
