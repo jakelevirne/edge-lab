@@ -11,10 +11,12 @@ Use the Raspberry Pi imager to create a machine called "imager" (so meta)
   - Under Services, enable SSH, allow public-key auth only, and paste in public key
  
 Boot pi with this new media and SSH in
+## Boot order
+All pi's have their bootloader set to boot from USB first and then backoff to SDCard. This allows us to mess around with pulling and inserting SDCards as often (we can just either attach or detach the USB before booting).
 
 
 ## Pi0
-pi0 is unique in that it is meant to normally run from an SDCard. Given this, the boot order has been changed to start from USB first, if available. Though this may seem counter-intuitive, it means that a backup/restore operating system (imager) can be loaded just by plugging in a USB that's been setup as above.
+
 
 ### Backup pi0
 
@@ -78,7 +80,6 @@ sudo resize2fs /dev/sda2
 
 
 ## Pi1..N
-pi1..N normally run from an USB drives. Given this, the boot order has been left to start from SDCard first, if available. Though this may seem counter-intuitive, it means that a backup/restore operating system (imager) can be loaded just by inserting an SDCard that's been setup as above.
 
 ### Backup pi1..N
 
