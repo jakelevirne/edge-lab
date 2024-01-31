@@ -95,8 +95,10 @@ Run clonezilla to backup
 sudo apt install clonezilla
 sudo clonezilla
 # work through it step-by-step or, run this single command, updating img name and volume as appropriate
-# Not clear how this works, though... need to somehow specify or mount the NFS source directory (/srv/os_images)
-/usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p choose savedisk pi0-2024-01-31-img mmcblk0
+sudo mkdir -p /home/partimag
+sudo mount 192.168.86.202:/srv/os_images /home/partimag
+
+sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p choose savedisk pi0-2024-01-31-img mmcblk0
 ```
 
 ### Restore pi1..N
@@ -111,9 +113,11 @@ Run clonezilla to restore
 ```
 sudo apt install clonezilla
 sudo clonezilla
-# work through it step-by-step or, run this single command, updating img name and volume as appropriate
-# Not clear how this works, though... need to somehow specify or mount the NFS source directory (/srv/os_images)
-/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi0-2024-01-31-img mmcblk0
+# work through it step-by-step or, instead run these commands, updating img name and volume as appropriate
+sudo mkdir -p /home/partimag
+sudo mount 192.168.86.202:/srv/os_images /home/partimag
+
+sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda
 sudo shutdown -h now
 ```
 
