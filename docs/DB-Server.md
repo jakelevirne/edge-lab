@@ -57,6 +57,9 @@ sudo nano /etc/dnsmasq.conf
 # Add line for nuc db server
 # nuc
 dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,nuc
+
+# restart dnsmasq
+sudo systemctl restart dnsmasq
 ```
 
 ## Create a share folder for OS images
