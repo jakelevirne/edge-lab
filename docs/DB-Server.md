@@ -42,6 +42,14 @@ nvme0n1     259:0    0   1.8T  0 disk
     └─md1p1 259:6    0   1.8T  0 part  /
 ``` 
 
+## Run OS Updates
+On nuc, update all packages:
+```
+sudo apt update
+sudo apt upgrade
+```
+
+
 ## Configure Networking
 On pi0, add a reserved IP for this server:
 ```
