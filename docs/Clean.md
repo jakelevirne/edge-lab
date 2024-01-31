@@ -87,9 +87,10 @@ sudo clonezilla
 # work through it step-by-step or, run this single command, updating img name and volume as appropriate
 # Not clear how this works, though... need to somehow specify or mount the NFS source directory (/srv/os_images)
 /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi0-2024-01-31-img mmcblk0
+sudo shutdown -h now
 ```
 
-Make sure the hostname is set correctly:
+SSH into the re-imaged machine and make sure the hostname is set correctly:
 ```
 # check the current hostname
 hostnamectl
