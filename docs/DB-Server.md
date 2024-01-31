@@ -52,4 +52,16 @@ dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,nuc
 ```
 
 ## Create a share folder for OS images
-We'll consider this machine our "storage server" -- mostly used as a database server, but also 
+We'll consider this machine our "storage server" -- mostly used as a database server, but also providing some NFS shared directories.
+
+```
+sudo apt install nfs-kernel-server
+sudo mkdir -p /srv/os_images
+sudo nano /etc/exports
+# add this line:
+/srv/os_images *(rw,sync,no_subtree_check)
+
+sudo exportfs -a
+sudo systemctl restart nfs-kernel-server
+sudo chmod 777 /srv/os_images
+```
