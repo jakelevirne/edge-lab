@@ -20,7 +20,23 @@ paste the following lines in to the existing file:
 # allow usb boot even on 3a power
 usb_max_current_enable=1
 ```
-
+Or better yet, after SSHing into pi0, change the EEPROM [bootloader config](https://forums.raspberrypi.com/viewtopic.php?t=359453) to always allow usb boot even on 3a power:
+```
+sudo rpi-eeprom-config --edit
+# Edit it to look like this (USB preferred boot order and USB max current enabled):
+[all]
+BOOT_UART=1
+BOOT_ORDER=0xf146
+POWER_OFF_ON_HALT=0
+[config.txt]
+[all]
+usb_max_current_enable=1
+```
+```
+sudo reboot
+# check the change by running:
+vcgencmd bootloader_config
+```
 
 pi0 will be setup as the router, as follows:
 
