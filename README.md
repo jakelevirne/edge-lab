@@ -1,7 +1,9 @@
 # pi5cluster
 
 ## pi0 - router
+
 Use the Raspberry Pi imager to image pi0.local
+
 - Device: Raspberry Pi 5, OS: Raspberry Pi OS Lite (64-bit), Storage: SD card
 - Edit Settings
   - Set hostname to pi0.local
@@ -11,16 +13,20 @@ Use the Raspberry Pi imager to image pi0.local
   - Under Services, enable SSH, allow public-key auth only, and paste in public key
 
 Before using it, enable USB boot even on 3A power:
+
 ```
 nano /Volumes/bootfs/config.txt
 ```
 
 paste the following lines in to the existing file:
+
 ```
 # allow usb boot even on 3a power
 usb_max_current_enable=1
 ```
+
 Or better yet, after SSHing into pi0, change the EEPROM [bootloader config](https://forums.raspberrypi.com/viewtopic.php?t=359453) to always allow usb boot even on 3a power and to prefer USB [boot order](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER):
+
 ```
 sudo rpi-eeprom-config --edit
 # Edit it to look like this (USB preferred boot order and USB max current enabled):
@@ -32,6 +38,7 @@ POWER_OFF_ON_HALT=0
 [all]
 usb_max_current_enable=1
 ```
+
 ```
 sudo reboot
 # check the change by running:
@@ -98,10 +105,10 @@ dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
 #chatgpt prompt: I'm following these steps to configure my headless raspberry pi as a router. Do I need to do anything differently if I also want everything to work for ipv6?. And then paste in all of the above.
 ```
 
-
 ## pi1 .. piN cluster servers
 
 Use the Raspberry Pi imager to image pi1.local through piN.local
+
 - Follow the same steps as above, but uncheck Configure wireless lan
 
 Connect this pi to the same switch as pi0 and power up
@@ -120,7 +127,9 @@ timedatectl
 # change timezone if wrong:
 sudo timedatectl set-timezone America/New_York
 ```
+
 Disable Wifi
+
 ```
 sudo nano /boot/firmware/config.txt
 # paste the following line
@@ -130,6 +139,7 @@ sudo reboot
 ```
 
 Test as follows:
+
 ```
 ssh pi@pi0.local
 # check the dhcp leases
@@ -137,6 +147,7 @@ cat /var/lib/misc/dnsmasq.leases
 ping <ip-address-of-pi1>
 exit
 ```
+
 ```
 # ping router from pi1
 ping 192.168.87.1
@@ -149,6 +160,7 @@ ping www.cnn.com
 https://www.tomshardware.com/how-to/raspberry-pi-benchmark-vcgencmd
 
 ## NAS
+
 This is setup on my NUC (aka nucnas.local). Did as follows:
 
 Installed Ubuntu Server 22.04.3 LTS using balenaEtcher to create a bootable USB and going through the install. First time through failed, but after upgrading the installer (which is an optional step in the install process itself), things went smoothly.
@@ -156,12 +168,14 @@ Installed Ubuntu Server 22.04.3 LTS using balenaEtcher to create a bootable USB 
 Through my home router, I gave nucnas a reserved IP
 
 Then, I ran these commands:
+
 ```
 sudo apt update
 sudo apt upgrade
 ```
 
 Create, format, and permanently mount the new logical volume:
+
 ```
 sudo lvcreate -n nfs-lv -L 1.5T ubuntu-vg
 sudo mkfs.ext4 /dev/ubuntu-vg/nfs-lv
@@ -172,7 +186,9 @@ sudo nano /etc/fstab
 # Add this line to the end of the file
 /dev/ubuntu-vg/nfs-lv /mnt/nfsnas ext4 defaults 0 2
 ```
+
 Install and configure the NFS server:
+
 ```
 sudo apt install nfs-kernel-server
 sudo nano /etc/exports
@@ -185,7 +201,9 @@ sudo systemctl enable nfs-kernel-server
 # Apply the export settings
 sudo exportfs -a
 ```
+
 #### Permanently mount from one of the pis
+
 ```
 sudo mkdir -p /mnt/nfsnas
 sudo nano /etc/fstab
@@ -195,17 +213,16 @@ sudo nano /etc/fstab
 
 sudo mount -a
 df -h
-
 ```
 
 #### Note: mounting from Mac required the `resvport` option
+
 ```
 sudo mount -t nfs -o resvport 192.168.86.5:/mnt/nfsnas ~/dev/nfsnas
 ```
 
-
-
 ## Proxmox
+
 https://github.com/jiangcuo/Proxmox-Port
 
 ```
@@ -215,38 +232,42 @@ sudo mount /dev/mmcblk0p1 ~/mnt/mmcblk0p1
 # in config.txt:
 kernel=kernel8.img
 ```
+
 ```
 # in cmdline.txt, add to the end of the line:
 cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
 ```
 
-
 Modify `/etc/hosts` like:
-```
-127.0.0.1	localhost
-::1		localhost ip6-localhost ip6-loopback
-ff02::1		ip6-allnodes
-ff02::2		ip6-allrouters
 
-192.168.86.200	pi0
+```
+127.0.0.1    localhost
+::1        localhost ip6-localhost ip6-loopback
+ff02::1        ip6-allnodes
+ff02::2        ip6-allrouters
+
+192.168.86.200    pi0
 ```
 
 REBOOT
 
 Test
+
 ```
 hostname --ip-address
 ```
+
 Should return your IP address
 
 Set your root password (this is what proxmox uses for it's initial admin user)
+
 ```
 sudo su
 passwd
 ```
 
-
 Continue following steps from https://github.com/jiangcuo/Proxmox-Port/wiki/Install-Proxmox-VE-on-Debian-bookworm, using `sudo`, like this:
+
 ```
 sudo sh -c 'echo "deb [arch=arm64] https://mirrors.apqa.cn/proxmox/debian/pve bookworm port" > /etc/apt/sources.list.d/pveport.list'
 
@@ -264,7 +285,9 @@ sudo systemctl disable NetworkManager
 
 sudo nano /etc/network/interfaces
 ```
+
 Make it look like this (https://pve.proxmox.com/wiki/Network_Configuration):
+
 ```
 auto lo
 iface lo inet loopback
@@ -274,16 +297,17 @@ iface eth0 inet manual
 
 auto vmbr0
 iface vmbr0 inet static
-	address 192.168.87.101/24
-	gateway 192.168.87.1
-	bridge-ports eth0
-	bridge-stp off
-	bridge-fd 0
-
+    address 192.168.87.101/24
+    gateway 192.168.87.1
+    bridge-ports eth0
+    bridge-stp off
+    bridge-fd 0
 ```
+
 REBOOT
 
 Configure port 8006 forwarding from pi0 to pi1 for proxmox admin UI
+
 ```
 sudo iptables -t nat -A PREROUTING -p tcp --dport 8006 -j DNAT --to-destination 192.168.87.101:8006
 sudo iptables -A FORWARD -p tcp -d 192.168.87.101 --dport 8006 -j ACCEPT
@@ -291,7 +315,9 @@ sudo netfilter-persistent save
 ```
 
 ### Running a VM
-https://github.com/jiangcuo/Proxmox-Arm64/wiki/Qemu-VM
+
+https://github.com/jiangcuo/Proxmox-Arm64/wiki/Qemu-VM  
 Tips:
+
 - OVMF UEFI
 - recommend configured virtio-scsi-pci (VirtIO SCSI)
