@@ -118,8 +118,17 @@ sudo mkdir -p /home/partimag
 sudo mount 192.168.86.202:/srv/os_images /home/partimag
 
 sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda
-sudo shutdown -h now
 ```
+Expand the root partition (/) to the full size of the disk:
+```
+sudo parted -l
+sudo parted /dev/sda
+# (parted) resizepart 2
+# Set the end point to 100%
+# quit
+sudo resize2fs /dev/sda2
+```
+
 
 SSH into the re-imaged machine and make sure the hostname is set correctly:
 ```
@@ -137,15 +146,7 @@ hostnamectl
 # Reboot for good measure
 sudo reboot
 ```
-Expand the root partition (/) to the full size of the disk:
-```
-sudo parted -l
-sudo parted /dev/sda
-# (parted) resizepart 2
-# Set the end point to 100%
-# quit
-sudo resize2fs /dev/sda2
-```
+
 SSH into pi0 and make sure this machine has a reserved IP
 ```
 # In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
