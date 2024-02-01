@@ -155,4 +155,8 @@ sudo nano /etc/dnsmasq.conf
 # Add lines that look like:
 # pi1
 dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
+# restart dnsmasq
+sudo systemctl restart dnsmasq
+# apply all configurations
+sudo systemctl restart NetworkManager
 ```
