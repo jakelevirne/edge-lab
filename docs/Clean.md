@@ -1,7 +1,9 @@
 # How to Clean and Re-image Machines
 
 ## Imager Boot Disk
+
 Use the Raspberry Pi imager to create a machine called "imager" (so meta)
+
 - Device: Raspberry Pi 5, OS: Raspberry Pi OS Lite (64-bit)
 - Edit Settings
   - Set hostname to imager
@@ -9,25 +11,27 @@ Use the Raspberry Pi imager to create a machine called "imager" (so meta)
   - Configure wireless lan
   - Set locale settings
   - Under Services, enable SSH, allow public-key auth only, and paste in public key
- 
+
 Boot pi with this new media and SSH in
+
 ## Boot order
+
 All pi's have their bootloader set to boot from USB first and then backoff to SDCard. This allows us to mess around with pulling and inserting SDCards as often (we can just either attach or detach the USB before booting).
 
-
 ## Pi0
-
 
 ### Backup pi0
 
 SSH in to the pi that's been booted with the imager media.
 
 Ensure the nuc/srv/os_images NFS is available:
+
 ```
 showmount -e 192.168.86.202
 ```
 
 Run clonezilla to backup
+
 ```
 sudo apt install clonezilla
 sudo clonezilla
@@ -37,14 +41,17 @@ sudo clonezilla
 ```
 
 ### Restore pi0
+
 SSH in to the pi that's been booted with the imager media.
 
 Ensure the nuc/srv/os_images NFS is available:
+
 ```
 showmount -e 192.168.86.202
 ```
 
 Run clonezilla to restore
+
 ```
 sudo apt install clonezilla
 sudo clonezilla
@@ -52,7 +59,9 @@ sudo clonezilla
 # Not clear how this works, though... need to somehow specify or mount the NFS source directory (/srv/os_images)
 /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi0-2024-01-31-img mmcblk0
 ```
+
 SSH into the re-imaged machine and make sure the hostname is set correctly:
+
 ```
 # check the current hostname
 hostnamectl
@@ -68,7 +77,9 @@ hostnamectl
 # Reboot for good measure
 sudo reboot
 ```
+
 Expand the root partition (/) to the full size of the disk:
+
 ```
 sudo parted -l
 sudo parted /dev/sda
@@ -78,6 +89,13 @@ sudo parted /dev/sda
 sudo resize2fs /dev/sda2
 ```
 
+Additional tools:
+
+```bash
+sudo apt install tmux
+```
+
+
 
 ## Pi1..N
 
@@ -86,11 +104,13 @@ sudo resize2fs /dev/sda2
 SSH in to the pi that's been booted with the imager media.
 
 Ensure the nuc/srv/os_images NFS is available:
+
 ```
 showmount -e 192.168.86.202
 ```
 
 Run clonezilla to backup
+
 ```
 sudo apt install clonezilla
 sudo clonezilla
@@ -102,14 +122,17 @@ sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p choose savedisk pi0-2
 ```
 
 ### Restore pi1..N
+
 SSH in to the pi that's been booted with the imager media.
 
 Ensure the nuc/srv/os_images NFS is available:
+
 ```
 showmount -e 192.168.86.202
 ```
 
 Run clonezilla to restore
+
 ```
 sudo apt install clonezilla
 sudo clonezilla
@@ -119,7 +142,9 @@ sudo mount 192.168.86.202:/srv/os_images /home/partimag
 
 sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda
 ```
+
 Expand the root partition (/) to the full size of the disk:
+
 ```
 sudo parted -l
 sudo parted /dev/sda
@@ -129,8 +154,8 @@ sudo parted /dev/sda
 sudo resize2fs /dev/sda2
 ```
 
-
 SSH into the re-imaged machine and make sure the hostname is set correctly:
+
 ```
 # check the current hostname
 hostnamectl
@@ -148,6 +173,7 @@ sudo reboot
 ```
 
 SSH into pi0 and make sure this machine has a reserved IP
+
 ```
 # In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
 cat /var/lib/misc/dnsmasq.leases
@@ -159,4 +185,10 @@ dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
 sudo systemctl restart dnsmasq
 # apply all configurations
 sudo systemctl restart NetworkManager
+```
+
+Additional tools:
+
+```bash
+sudo apt install tmux
 ```
