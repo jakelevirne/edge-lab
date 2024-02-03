@@ -95,8 +95,6 @@ Additional tools:
 sudo apt install tmux
 ```
 
-
-
 ## Pi1..N
 
 ### Backup pi1..N

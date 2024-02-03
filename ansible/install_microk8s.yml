@@ -1,0 +1,60 @@
+---
+- name: Install Snap, MicroK8s, and kernel modules on Debian-based machines
+  hosts: pi_hosts
+  become: yes
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Snap
+      ansible.builtin.apt:
+        name: snapd
+        state: present
+
+    - name: Enable and start Snap services
+      ansible.builtin.systemd:
+        name: snapd.socket
+        state: started
+        enabled: yes
+      notify: Restart Snap services
+
+    - name: Install MicroK8s
+      ansible.builtin.snap:
+        name: microk8s
+        classic: true
+        state: present
+
+    - name: Add user pi to the microk8s group
+      ansible.builtin.user:
+        name: pi
+        groups: microk8s
+        append: yes
+
+    - name: Change ownership of the .kube directory for user pi
+      ansible.builtin.file:
+        path: "/home/pi/.kube"
+        owner: pi
+        group: pi
+        recurse: yes
+
+    - name: Re-login for group changes to take effect
+      ansible.builtin.meta: reset_connection
+      delegate_to: "{{ inventory_hostname }}"
+      delegate_facts: yes
+
+    - name: Stop MicroK8s
+      ansible.builtin.command:
+        cmd: /snap/bin/microk8s stop
+      ignore_errors: yes
+
+    - name: Start MicroK8s
+      ansible.builtin.command:
+        cmd: /snap/bin/microk8s start
+
+  handlers:
+    - name: Restart Snap services
+      ansible.builtin.systemd:
+        name: snapd.service
+        state: restarted
