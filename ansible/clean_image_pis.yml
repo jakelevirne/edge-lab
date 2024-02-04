@@ -1,0 +1,76 @@
+---
+- name: Setup and clone disk using Clonezilla
+  hosts: imager_hosts
+  become: yes
+  tasks:
+    - name: Install Clonezilla
+      ansible.builtin.apt:
+        name: clonezilla
+        state: present
+
+    - name: Ensure /home/partimag directory exists
+      ansible.builtin.file:
+        path: /home/partimag
+        state: directory
+
+    - name: Install nfs-common for mounting
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+
+    - name: Mount OS images directory
+      ansible.builtin.mount:
+        path: /home/partimag
+        src: nuc.local:/srv/os_images
+        fstype: nfs
+        state: mounted
+        opts: defaults
+
+    - name: Install expect to automate Clonezilla interaction
+      ansible.builtin.apt:
+        name: expect
+        state: present
+
+    - name: Run ocs-sr with auto-confirmation via yes
+      ansible.builtin.shell:
+        cmd: yes | sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch -nogui -scr restoredisk pi1-2024-01-31-img sda
+      become: yes
+
+
+    - name: Install cloud-utils for growpart
+      ansible.builtin.apt:
+        name: cloud-utils
+        state: present
+
+    - name: Extend partition 2 on /dev/sda
+      ansible.builtin.command:
+        cmd: growpart /dev/sda 2
+
+    - name: Ensure /mnt/dev/sda2 directory exists
+      ansible.builtin.file:
+        path: /mnt/dev/sda2
+        state: directory
+
+    - name: Mount /dev/sda2
+      ansible.builtin.mount:
+        path: /mnt/dev/sda2
+        src: /dev/sda2
+        fstype: auto
+        state: mounted
+
+    - name: Update hostname based on host
+      ansible.builtin.shell:
+        cmd: echo "pi{{ inventory_hostname | regex_search('(\\d+)$') }}" | sudo tee /mnt/dev/sda2/etc/hostname
+
+
+    - name: Update /etc/hosts to replace pi1 with appropriate pi<number>
+      ansible.builtin.lineinfile:
+        path: /mnt/dev/sda2/etc/hosts
+        regexp: 'pi1'
+        line: "pi{{ inventory_hostname | regex_search('(\\d+)$') }}"
+        state: present
+
+
+    - name: Reboot the system immediately
+      ansible.builtin.reboot:
+        reboot_timeout: 0

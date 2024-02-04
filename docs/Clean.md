@@ -128,7 +128,7 @@ sudo umount /dev/sda1
 sudo mkfs.vfat /dev/sda1
 ```
 
-SSH in to the pi that's been booted with the imager media.
+SSH in to the pi that's been booted with the imager media (e.g. `ssh imager1.local)`.
 
 Ensure the nuc/srv/os_images NFS is available:
 
@@ -140,7 +140,7 @@ Run clonezilla to restore
 
 ```
 sudo apt install clonezilla
-sudo clonezilla
+#sudo clonezilla
 # work through it step-by-step or, instead run these commands, updating img name and volume as appropriate
 sudo mkdir -p /home/partimag
 sudo mount nuc.local:/srv/os_images /home/partimag
@@ -168,14 +168,13 @@ Expand the root partition (/) to the full size of the disk:
 # sudo e2fsck -f /dev/sda2
 # sudo resize2fs /dev/sda2
 # alternatively:
-sudo apt install cloud-tools
+sudo apt install cloud-utils
 sudo growpart /dev/sda 2
 # update the hostname before rebooting
 sudo mkdir -p /mnt/dev/sda2
 sudo mount /dev/sda2 /mnt/dev/sda2
-echo "pi1" | sudo tee /mnt/dev/sda2/etc/hostname
-sudo sed -i 's/pi1/pi7/g' /mnt/dev/sda2/etc/hosts
-
+echo "piX" | sudo tee /mnt/dev/sda2/etc/hostname
+sudo sed -i 's/pi1/piX/g' /mnt/dev/sda2/etc/hosts
 ```
 
 Reboot, then SSH into the re-imaged machine and make sure the hostname is set correctly:
