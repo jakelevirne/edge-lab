@@ -1,0 +1,24 @@
+---
+- name: Erase and format /dev/sda1 and then reboot
+  hosts: pi_hosts
+  become: yes  # This is required to gain root privileges
+  tasks:
+    - name: Unmount /dev/sda1
+      ansible.builtin.mount:
+        path: /boot/firmware  # Assuming /dev/sda1 is mounted at /mnt/sda1; adjust if necessary
+        src: /dev/sda1
+        fstype: auto
+        state: unmounted
+
+    - name: Format /dev/sda1 as FAT
+      ansible.builtin.command:
+        cmd: mkfs.vfat /dev/sda1
+      register: format_result
+
+    - name: Show format result
+      ansible.builtin.debug:
+        msg: "{{ format_result.stdout }}"
+
+    - name: Reboot the system
+      ansible.builtin.reboot:
+        reboot_timeout: 0

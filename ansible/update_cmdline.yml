@@ -1,5 +1,5 @@
 - name: Ensure specific string is appended to the first line of cmdline.txt if not present
-  hosts: all
+  hosts: pi_hosts
   become: yes  # Required for modifying system files
   tasks:
     - name: Check if the specific string is already present
