@@ -26,11 +26,6 @@
         state: mounted
         opts: defaults
 
-    - name: Install expect to automate Clonezilla interaction
-      ansible.builtin.apt:
-        name: expect
-        state: present
-
     - name: Run ocs-sr with auto-confirmation via yes
       ansible.builtin.shell:
         cmd: yes | sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch -nogui -scr restoredisk pi1-2024-01-31-img sda
@@ -60,15 +55,14 @@
 
     - name: Update hostname based on host
       ansible.builtin.shell:
-        cmd: echo "pi{{ inventory_hostname | regex_search('(\\d+)$') }}" | sudo tee /mnt/dev/sda2/etc/hostname
+        cmd: echo "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\\d+)$') }}" | sudo tee /mnt/dev/sda2/etc/hostname
 
 
     - name: Update /etc/hosts to replace pi1 with appropriate pi<number>
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: /mnt/dev/sda2/etc/hosts
         regexp: 'pi1'
-        line: "pi{{ inventory_hostname | regex_search('(\\d+)$') }}"
-        state: present
+        replace: "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\\d+)$') }}"
 
 
     - name: Reboot the system immediately

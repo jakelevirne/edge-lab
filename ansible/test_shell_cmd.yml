@@ -1,0 +1,12 @@
+---
+- name: Test ansible.builtin.shell module
+  hosts: imager_hosts
+  gather_facts: no
+  tasks:
+    - name: Display the inventory hostname
+      ansible.builtin.shell: "echo pi{{ inventory_hostname }}"
+      register: date_output
+
+    - name: Show output
+      ansible.builtin.debug:
+        msg: "{{ date_output.stdout }}"
