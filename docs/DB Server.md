@@ -1,7 +1,9 @@
 # Database Server
+
 This will be a database server, running on an Intel NUC. It currently consists of two 2TB hard drives (one SATA SSD and one m.2 NVME) configured as software RAID1.
 
 ## Install the OS
+
 - [Download Ubuntu Server](https://ubuntu.com/download/server) - I choose LTS, 22.04.3
 - Use balena Etcher to burn the ISO to a USB drive
 - Boot the NUC from the USB drive (F2 bios)
@@ -17,6 +19,7 @@ This will be a database server, running on an Intel NUC. It currently consists o
     - We could create an LVM on top of these, but it felt overly complicated so I didn't.
 
 After installation completes, running `lsblk` should show the following:
+
 ```
 NAME        MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
 loop0         7:0    0  63.4M  1 loop  /snap/core20/1974
@@ -40,18 +43,21 @@ nvme0n1     259:0    0   1.8T  0 disk
 └─nvme0n1p4 259:4    0   1.8T  0 part  
   └─md1       9:1    0   1.8T  0 raid1 
     └─md1p1 259:6    0   1.8T  0 part  /
-``` 
+```
 
 ## Run OS Updates
+
 On nuc, update all packages:
+
 ```
 sudo apt update
 sudo apt upgrade
 ```
 
-
 ## Configure Networking
+
 On pi0, add a reserved IP for this server:
+
 ```
 sudo nano /etc/dnsmasq.conf
 # Add line for nuc db server
@@ -63,6 +69,7 @@ sudo systemctl restart dnsmasq
 ```
 
 ## Create a share folder for OS images
+
 We'll consider this machine our "storage server" -- mostly used as a database server, but also providing some NFS shared directories.
 
 ```
@@ -75,4 +82,14 @@ sudo nano /etc/exports
 sudo exportfs -a
 sudo systemctl restart nfs-kernel-server
 sudo chmod 777 /srv/os_images
+```
+
+## Simple Hostname
+
+```bash
+sudo apt update
+sudo apt install avahi-daemon
+sudo systemctl status avahi-daemon
+sudo systemctl start avahi-daemon
+sudo systemctl enable avahi-daemon
 ```

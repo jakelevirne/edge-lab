@@ -2,7 +2,7 @@
 
 ```text
 #> wget http://download.silicondust.com/hdhomerun/libhdhomerun_20210624.tgz
-#> tar zxvf libhdhomerun_20130117.tgz 
+#> tar zxvf libhdhomerun_20210624.tgz 
 ```
 
 # Install Tools
@@ -79,3 +79,5 @@ tsid=0x01FB
 ```text
 #> hdhomerun_config 103A9917 set /tuner0/target udp://192.168.1.100:5000
 ```
+
+hdhomerun_config 10918CAB save /tuner0  | ccextractor -stdin

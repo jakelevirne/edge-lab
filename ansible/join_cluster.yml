@@ -41,3 +41,8 @@
       ansible.builtin.command: "{{ microk8s_join_command }}"
       when: inventory_hostname != 'pi1.local' and microk8s_join_command is defined
 
+    - name: Reboot all machines to apply changes
+      ansible.builtin.reboot:
+        msg: "Rebooting after MicroK8s configuration"
+        reboot_timeout: 600  # Adjust this timeout as needed
+      when: microk8s_join_command is defined

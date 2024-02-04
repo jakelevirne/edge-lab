@@ -104,5 +104,3 @@ To run this playbook:
 ```bash
 ansible-playbook -i hosts.ini install_microk8s.yml
 ```
-
-

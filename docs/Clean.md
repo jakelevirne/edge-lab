@@ -116,17 +116,24 @@ sudo clonezilla
 sudo mkdir -p /home/partimag
 sudo mount 192.168.86.202:/srv/os_images /home/partimag
 
-sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p choose savedisk pi0-2024-01-31-img mmcblk0
+sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p choose savedisk pi1-2024-01-31-img mmcblk0
 ```
 
 ### Restore pi1..N
+
+Force the pi to boot from the imager media by formatting the boot partition of the USB drive:
+
+```bash
+sudo umount /dev/sda1
+sudo mkfs.vfat /dev/sda1
+```
 
 SSH in to the pi that's been booted with the imager media.
 
 Ensure the nuc/srv/os_images NFS is available:
 
 ```
-showmount -e 192.168.86.202
+showmount -e nuc.local
 ```
 
 Run clonezilla to restore
@@ -136,23 +143,42 @@ sudo apt install clonezilla
 sudo clonezilla
 # work through it step-by-step or, instead run these commands, updating img name and volume as appropriate
 sudo mkdir -p /home/partimag
-sudo mount 192.168.86.202:/srv/os_images /home/partimag
+sudo mount nuc.local:/srv/os_images /home/partimag
 
-sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda
+sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch restoredisk pi1-2024-01-31-img sda
+# sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda
+```
+
+```bash
+*****************************************************.
+The following step is to restore an image to the hard disk/partition(s) on this machine: "/tmp/pi1-2024-01-31-img-tmp-cnvted" -> "sda sda1 sda2"
+The image was created at: 2024-0131-1432
+WARNING!!! WARNING!!! WARNING!!!
+Are you sure you want to continue? (y/n)
 ```
 
 Expand the root partition (/) to the full size of the disk:
 
 ```
-sudo parted -l
-sudo parted /dev/sda
+# sudo parted -l
+# sudo parted /dev/sda
 # (parted) resizepart 2
 # Set the end point to 100%
 # quit
-sudo resize2fs /dev/sda2
+# sudo e2fsck -f /dev/sda2
+# sudo resize2fs /dev/sda2
+# alternatively:
+sudo apt install cloud-tools
+sudo growpart /dev/sda 2
+# update the hostname before rebooting
+sudo mkdir -p /mnt/dev/sda2
+sudo mount /dev/sda2 /mnt/dev/sda2
+echo "pi1" | sudo tee /mnt/dev/sda2/etc/hostname
+sudo sed -i 's/pi1/pi7/g' /mnt/dev/sda2/etc/hosts
+
 ```
 
-SSH into the re-imaged machine and make sure the hostname is set correctly:
+Reboot, then SSH into the re-imaged machine and make sure the hostname is set correctly:
 
 ```
 # check the current hostname
