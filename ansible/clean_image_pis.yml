@@ -26,6 +26,20 @@
         state: mounted
         opts: defaults
 
+    - name: Unmount /dev/sda1
+      ansible.builtin.mount:
+        path: /mnt/dev/sda1
+        src: /dev/sda1
+        fstype: auto
+        state: unmounted
+
+    - name: Unmount /dev/sda2
+      ansible.builtin.mount:
+        path: /mnt/dev/sda2
+        src: /dev/sda2
+        fstype: auto
+        state: unmounted
+
     - name: Run ocs-sr with auto-confirmation via yes
       ansible.builtin.shell:
         cmd: yes | sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch -nogui -scr restoredisk pi1-2024-01-31-img sda
@@ -40,6 +54,12 @@
     - name: Extend partition 2 on /dev/sda
       ansible.builtin.command:
         cmd: growpart /dev/sda 2
+      register: growpart_result
+
+    - name: Resize the ext4 filesystem on /dev/sda2
+      ansible.builtin.shell:
+        cmd: resize2fs /dev/sda2
+      when: growpart_result is changed
 
     - name: Ensure /mnt/dev/sda2 directory exists
       ansible.builtin.file:
@@ -53,19 +73,52 @@
         fstype: auto
         state: mounted
 
-# TODO:Still not quite working... it writes 'pi' to the file instead of 'pi1'
+
     - name: Update hostname based on host
       ansible.builtin.shell:
         cmd: echo "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\d+)$') }}" | sudo tee /mnt/dev/sda2/etc/hostname
 
-# TODO:Not sure. It seems to be working, but it might just be leaving it unchanged
+
     - name: Update /etc/hosts to replace pi1 with appropriate pi<number>
       ansible.builtin.replace:
         path: /mnt/dev/sda2/etc/hosts
         regexp: 'pi1'
-        replace: "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\d+)$') }}"
+        replace: "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\\d+)$') }}"
+
+    - name: Unmount /dev/sda2
+      ansible.builtin.mount:
+        path: /mnt/dev/sda2
+        src: /dev/sda2
+        fstype: auto
+        state: unmounted
+
+    - name: Ensure /mnt/dev/sda1 directory exists
+      ansible.builtin.file:
+        path: /mnt/dev/sda1
+        state: directory
+
+    - name: Mount /dev/sda1
+      ansible.builtin.mount:
+        path: /mnt/dev/sda1
+        src: /dev/sda1
+        fstype: auto
+        state: mounted     
+
+    - name: Ensure usb_max_current_enable=1 is in /mnt/dev/sda1/config.txt
+      ansible.builtin.lineinfile:
+        path: /mnt/dev/sda1/config.txt
+        line: usb_max_current_enable=1
+        state: present
 
 
-    - name: Reboot the system immediately
-      ansible.builtin.reboot:
-        reboot_timeout: 0
+    - name: Unmount /dev/sda1
+      ansible.builtin.mount:
+        path: /mnt/dev/sda1
+        src: /dev/sda1
+        fstype: auto
+        state: unmounted   
+
+    - name: Schedule a reboot in one minute (fire and forget)
+      ansible.builtin.command:
+        cmd: shutdown -r +1
+      ignore_errors: yes

@@ -3,6 +3,22 @@
   hosts: pi_hosts
   become: yes
   tasks:
+    # https://microk8s.io/docs/install-raspberry-pi
+    - name: Check if the specific string is already present
+      ansible.builtin.shell: grep -q 'cgroup_enable=memory cgroup_memory=1' /boot/firmware/cmdline.txt
+      register: grep_result
+      failed_when: grep_result.rc > 1
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Append string to the first line without adding newlines
+      ansible.builtin.shell: |
+        sed -i '1s/$/ cgroup_enable=memory cgroup_memory=1/' /boot/firmware/cmdline.txt
+      when: grep_result.rc == 1
+      args:
+        executable: /bin/bash
+      notify: reboot_system
+
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: yes
@@ -58,3 +74,13 @@
       ansible.builtin.systemd:
         name: snapd.service
         state: restarted
+
+  handlers:
+    - name: reboot_system
+      ansible.builtin.reboot:
+        msg: "Rebooting because of cmdline.txt update"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+      listen: "reboot_system"

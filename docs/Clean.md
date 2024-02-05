@@ -55,9 +55,21 @@ Run clonezilla to restore
 ```
 sudo apt install clonezilla
 sudo clonezilla
-# work through it step-by-step or, run this single command, updating img name and volume as appropriate
-# Not clear how this works, though... need to somehow specify or mount the NFS source directory (/srv/os_images)
+# work through it step-by-step or, instead run these commands, updating img name and volume as appropriate
+sudo mkdir -p /home/partimag
+sudo mount 192.168.86.202:/srv/os_images /home/partimag
+
+#TODO: Review this command
 /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi0-2024-01-31-img mmcblk0
+
+# These steps are only needed if the SD card is bigger than 128GB
+# But running them shouldn't hurt either way.
+sudo apt install cloud-utils
+sudo growpart /dev/mmcblk0 2
+sudo resize2fs /dev/mmcblk0
+sudo reboot
+
+
 ```
 
 SSH into the re-imaged machine and make sure the hostname is set correctly:
@@ -78,17 +90,6 @@ hostnamectl
 sudo reboot
 ```
 
-Expand the root partition (/) to the full size of the disk:
-
-```
-sudo parted -l
-sudo parted /dev/sda
-# (parted) resizepart 2
-# Set the end point to 100%
-# quit
-sudo resize2fs /dev/sda2
-```
-
 Additional tools:
 
 ```bash
@@ -104,7 +105,7 @@ SSH in to the pi that's been booted with the imager media.
 Ensure the nuc/srv/os_images NFS is available:
 
 ```
-showmount -e 192.168.86.202
+showmount -e 192.168.87.2
 ```
 
 Run clonezilla to backup
@@ -114,7 +115,7 @@ sudo apt install clonezilla
 sudo clonezilla
 # work through it step-by-step or, run this single command, updating img name and volume as appropriate
 sudo mkdir -p /home/partimag
-sudo mount 192.168.86.202:/srv/os_images /home/partimag
+sudo mount 192.168.87.2:/srv/os_images /home/partimag
 
 sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p choose savedisk pi1-2024-01-31-img mmcblk0
 ```
@@ -160,16 +161,9 @@ Are you sure you want to continue? (y/n)
 Expand the root partition (/) to the full size of the disk:
 
 ```
-# sudo parted -l
-# sudo parted /dev/sda
-# (parted) resizepart 2
-# Set the end point to 100%
-# quit
-# sudo e2fsck -f /dev/sda2
-# sudo resize2fs /dev/sda2
-# alternatively:
 sudo apt install cloud-utils
 sudo growpart /dev/sda 2
+sudo resize2fs /dev/sda2
 # update the hostname before rebooting
 sudo mkdir -p /mnt/dev/sda2
 sudo mount /dev/sda2 /mnt/dev/sda2
