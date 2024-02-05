@@ -1,0 +1,24 @@
+---
+- name: Reboot router host
+  hosts: router_hosts
+  become: yes
+  tasks:
+    - name: Rebooting pi0.local
+      ansible.builtin.reboot:
+
+- name: Reboot pi_hosts in parallel
+  hosts: pi_hosts
+  become: yes
+  strategy: free
+  tasks:
+    - name: Rebooting pi hosts
+      ansible.builtin.reboot:
+
+
+- name: Reboot nfs_hosts in parallel
+  hosts: nfs_hosts
+  become: yes
+  strategy: free
+  tasks:
+    - name: Rebooting nfs hosts
+      ansible.builtin.reboot:
