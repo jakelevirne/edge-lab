@@ -56,10 +56,16 @@
         cmd: growpart /dev/sda 2
       register: growpart_result
 
-    - name: Resize the ext4 filesystem on /dev/sda2
+    - name: e2fsck on /dev/sda2 and resize
       ansible.builtin.shell:
-        cmd: resize2fs /dev/sda2
+        cmd: e2fsck -f -y /dev/sda2 && resize2fs /dev/sda2
       when: growpart_result is changed
+      register: e2fsck_result
+
+#    - name: Resize the ext4 filesystem on /dev/sda2
+#      ansible.builtin.shell:
+#        cmd: resize2fs /dev/sda2
+#      when: e2fsck_result is changed
 
     - name: Ensure /mnt/dev/sda2 directory exists
       ansible.builtin.file:
