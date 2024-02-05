@@ -1,5 +1,17 @@
 ---
+- name: Ensure Vault password is provided
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check for vault access
+      ansible.builtin.debug:
+        msg: "Checking vault access."
+      vars:
+        vault_test: "{{ lookup('ansible.builtin.file', 'secrets.yml') }}"
+      failed_when: vault_test is undefined
+
 - name: Reboot router host
+
   hosts: router_hosts
   become: yes
   tasks:
@@ -18,6 +30,8 @@
 - name: Reboot nfs_hosts in parallel
   hosts: nfs_hosts
   become: yes
+  vars_files:
+    - secrets.yml
   strategy: free
   tasks:
     - name: Rebooting nfs hosts
