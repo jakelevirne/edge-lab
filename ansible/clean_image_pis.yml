@@ -53,16 +53,17 @@
         fstype: auto
         state: mounted
 
+# TODO:Still not quite working... it writes 'pi' to the file instead of 'pi1'
     - name: Update hostname based on host
       ansible.builtin.shell:
-        cmd: echo "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\\d+)$') }}" | sudo tee /mnt/dev/sda2/etc/hostname
+        cmd: echo "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\d+)$') }}" | sudo tee /mnt/dev/sda2/etc/hostname
 
-
+# TODO:Not sure. It seems to be working, but it might just be leaving it unchanged
     - name: Update /etc/hosts to replace pi1 with appropriate pi<number>
       ansible.builtin.replace:
         path: /mnt/dev/sda2/etc/hosts
         regexp: 'pi1'
-        replace: "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\\d+)$') }}"
+        replace: "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\d+)$') }}"
 
 
     - name: Reboot the system immediately
