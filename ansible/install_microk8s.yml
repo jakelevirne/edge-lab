@@ -75,7 +75,6 @@
         name: snapd.service
         state: restarted
 
-  handlers:
     - name: reboot_system
       ansible.builtin.reboot:
         msg: "Rebooting because of cmdline.txt update"

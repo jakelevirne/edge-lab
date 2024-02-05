@@ -155,6 +155,16 @@ ping 192.168.87.1
 ping www.cnn.com
 ```
 
+## Checking for boot errors
+
+```bash
+journalctl -p err -b
+```
+
+
+
+
+
 ## Benchmarking
 
 https://www.tomshardware.com/how-to/raspberry-pi-benchmark-vcgencmd
