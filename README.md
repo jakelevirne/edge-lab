@@ -1,4 +1,5 @@
-# edge-lab (A dev environment focused on edge computing)
+# edge-lab
+## A dev environment focused on edge computing
 
 ## pi0 - router
 
