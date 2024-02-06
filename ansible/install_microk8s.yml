@@ -60,14 +60,14 @@
       delegate_to: "{{ inventory_hostname }}"
       delegate_facts: yes
 
-    - name: Stop MicroK8s
-      ansible.builtin.command:
-        cmd: /snap/bin/microk8s stop
-      ignore_errors: yes
+#    - name: Stop MicroK8s
+#      ansible.builtin.command:
+#        cmd: /snap/bin/microk8s stop
+#      ignore_errors: yes
 
-    - name: Start MicroK8s
-      ansible.builtin.command:
-        cmd: /snap/bin/microk8s start
+#    - name: Start MicroK8s
+#      ansible.builtin.command:
+#        cmd: /snap/bin/microk8s start
 
   handlers:
     - name: Restart Snap services

@@ -2,15 +2,13 @@
 
 [Kubernetes 101: Deploy Your First Application with MicroK8s - The New Stack](https://thenewstack.io/kubernetes-101-deploy-your-first-application-with-microk8s/)
 
-
-
 [Getting started with Redpanda in Kubernetes](https://redpanda.com/blog/manage-clusters-k8s-streaming-data)
-
-
 
 [Tools To Make Your Terminal DevOps and Kubernetes Friendly](https://www.linkedin.com/pulse/tools-make-your-terminal-devops-kubernetes-friendly-maryam-tavakkoli/)
 
+### Enable MicroK8s add-ons
 
+On one of the cluster nodes:
 
 ```bash
 # Need to create a storage class
@@ -20,9 +18,10 @@ microk8s enable hostpath-storage
 #TODO: Add this to ansible
 ```
 
-
-
-
+```bash
+# Setup the Metal Load Balancer
+microk8s enable 
+```
 
 ### Setup client access to the K8s cluster
 
@@ -59,25 +58,27 @@ Close and reopen your terminal, or `source ~/.zshrc` and you should now be able 
 
 Note that with this approach, if you reboot your machine and try to use your browser (or any other tool) to access the cluster subnet before opening a terminal it won't work because the route won't be set yet.
 
+Get the kubeconfig from the cluster by running the following on a cluster machine:
 
+```bash
+microk8s kubectl config view --minify --flatten  > kubeconfig.yaml
+```
 
-Get the kubeconfig from the cluster and create an ENV variable to point to it. Like this, updating the file path as appropriate:
+Transfer this file to the client and create an ENV variable to point to it. Like this, updating the file path as appropriate:
 
 ```bash
 export KUBECONFIG=~/dev/pi5cluster/k8s/pi-kubeconfig
 ```
 
+Edit the kubeconfig and update the `server` line so it points to one of the cluster machines.
+
 Now you can run kubectl commands against the cluster. If you want, you can change the namespace of the current context so you don't have to type `--namespace` over and over again in your commands
 
 ```bash
-config set-context --current --namespace=redpanda
+kubectl config set-context --current --namespace=redpanda
 # switch back to the default namespace:
-config set-context --current --namespace=default
+kubectl config set-context --current --namespace=default
 ```
-
-
-
-
 
 ## RedPanda (Kafka)
 
@@ -90,8 +91,6 @@ Copied and pasted here to make it easier to define a namespace.
 ```bash
 kubectl config set-context --current --namespace=redpanda
 ```
-
-
 
 ## Deploy Redpanda and Redpanda Console
 
@@ -145,8 +144,6 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
    ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
    
    If you already have Flux installed and you want it to continue managing resources across the entire cluster, use the `--set enableHelmControllers=false` flag. This flag prevents the Redpanda Operator from deploying its own set of Helm controllers that may conflict with those installed with Flux.
-   
-   
 
 5. Ensure that the Deployment is successfully rolled out:
    
@@ -225,7 +222,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    - Helm
 
-1. Create a [Topic resource](https://docs.redpanda.com/current/manage/kubernetes/k-manage-topics/):
+3. Create a [Topic resource](https://docs.redpanda.com/current/manage/kubernetes/k-manage-topics/):
    
    `topic.yaml`
    
@@ -248,7 +245,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
 
-2. Apply the Topic resource in the same namespace as your Redpanda cluster:
+4. Apply the Topic resource in the same namespace as your Redpanda cluster:
    
    ```bash
    kubectl apply -f topic.yaml
@@ -256,7 +253,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
 
-3. Check the logs of the Redpanda Operator to confirm that the topic was created:
+5. Check the logs of the Redpanda Operator to confirm that the topic was created:
    
    ```bash
    kubectl logs -l app.kubernetes.io/name=operator -c manager
@@ -270,7 +267,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
 
-3. Describe the topic:
+6. Describe the topic:
    
    ```bash
    internal-rpk topic describe twitch-chat
@@ -280,7 +277,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    Expected output:
 
-4. Produce a message to the topic:
+7. Produce a message to the topic:
    
    ```bash
    internal-rpk topic produce twitch-chat
@@ -288,7 +285,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
 
-5. Type a message, then press Enter:
+8. Type a message, then press Enter:
    
    ```text
    Pandas are fabulous!
@@ -304,23 +301,17 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    
    ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
 
-6. Press Ctrl+C to finish producing messages to the topic.
+9. Press Ctrl+C to finish producing messages to the topic.
 
-7. Consume one message from the topic:
-   
-   ```bash
-   internal-rpk topic consume twitch-chat --num 1
-   ```
-   
-   
-   
-   ## Trying with just Helm chart instead of the Operator
-   
-   ```bash
-   helm install redpanda redpanda/redpanda \
-     --create-namespace \
-     --set external.domain=customredpandadomain.local \
-     --set statefulset.initContainers.setDataDirOwnership.enabled=true
-   ```
-   
-   ## 
+10. Consume one message from the topic:
+    
+    ```bash
+    internal-rpk topic consume twitch-chat --num 1
+    ```
+
+## Pulumi
+
+```bash
+brew install pulumi
+pulumi -version
+```
