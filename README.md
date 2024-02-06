@@ -1,4 +1,4 @@
-# pi5cluster
+# edge-lab (A dev environment focused on edge computing)
 
 ## pi0 - router
 
