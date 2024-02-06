@@ -1,11 +1,12 @@
-
 ## Disk benchmarking
+
 ```
 sudo fio --filename=/dev/mmcblk0 --direct=1 --rw=randrw --bs=4k --ioengine=libaio --iodepth=256 --runtime=120 --numjobs=4 --time_based --group_reporting --name=iops-test-job --eta-newline=1
 sudo fio --filename=/dev/sda --direct=1 --rw=randrw --bs=4k --ioengine=libaio --iodepth=256 --runtime=120 --numjobs=4 --time_based --group_reporting --name=iops-test-job --eta-newline=1
 ```
 
 ### SD Card performance
+
 ```
 iops-test-job: (groupid=0, jobs=4): err= 0: pid=1711: Fri Jan 26 11:56:34 2024
   read: IOPS=855, BW=3424KiB/s (3506kB/s)(402MiB/120117msec)
@@ -91,34 +92,36 @@ Run status group 0 (all jobs):
 
 Disk stats (read/write):
   sda: ios=1145655/1146849, merge=0/0, ticks=3412119/3411136, in_queue=6823505, util=100.00%
-
 ```
+
 #### PiBenchmarks.com test for Samsung T7 USB
+
 From https://github.com/TheRemote/PiBenchmarks, ran:
 `sudo ./Storage.sh ~/mnt/sda2/`
 
 https://pibenchmarks.com/benchmark/78375/
+
 ```
 Running fio write test ...
 Running fio read test ...
 FIO results - 4k RandWrite: 32302 IOPS (129211 KB/s) - 4k RandRead: 41124 IOPS (164497 KB/s)
 Running iozone test ...
-	Iozone: Performance Test of File I/O
-	        Version $Revision: 3.489 $
-		Compiled for 64 bit mode.
-		Build: linux 
-	Run began: Fri Jan 26 12:35:59 2024
-	Auto Mode
-	Include fsync in write timing
-	O_DIRECT feature enabled
-	File size set to 81920 kB
-	Record Size 4 kB
-	Command line used: iozone -a -e -I -i 0 -i 1 -i 2 -s 80M -r 4k
-	Output is in kBytes/sec
-	Time Resolution = 0.000001 seconds.
-	Processor cache size set to 1024 kBytes.
-	Processor cache line size set to 32 bytes.
-	File stride size set to 17 * record size.
+    Iozone: Performance Test of File I/O
+            Version $Revision: 3.489 $
+        Compiled for 64 bit mode.
+        Build: linux 
+    Run began: Fri Jan 26 12:35:59 2024
+    Auto Mode
+    Include fsync in write timing
+    O_DIRECT feature enabled
+    File size set to 81920 kB
+    Record Size 4 kB
+    Command line used: iozone -a -e -I -i 0 -i 1 -i 2 -s 80M -r 4k
+    Output is in kBytes/sec
+    Time Resolution = 0.000001 seconds.
+    Processor cache size set to 1024 kBytes.
+    Processor cache line size set to 32 bytes.
+    File stride size set to 17 * record size.
                                                               random    random     bkwd    record    stride                                    
               kB  reclen    write  rewrite    read    reread    read     write     read   rewrite      read   fwrite frewrite    fread  freread
            81920       4    38163    40607    18900    18890    20223    40434                                                                
@@ -147,33 +150,34 @@ Compare with previous benchmark results at:
 https://pibenchmarks.com/
 ```
 
-
 #### PiBenchmarks.com test for Amazon Basics SD
+
 From https://github.com/TheRemote/PiBenchmarks, ran:
 `sudo ./Storage.sh ~/mnt/mmcblk0p2/`
 
 https://pibenchmarks.com/benchmark/78375/
+
 ```
 Running fio write test ...
 Running fio read test ...
 FIO results - 4k RandWrite: 1814 IOPS (7259 KB/s) - 4k RandRead: 5920 IOPS (23683 KB/s)
 Running iozone test ...
-	Iozone: Performance Test of File I/O
-	        Version $Revision: 3.489 $
-		Compiled for 64 bit mode.
-		Build: linux 
-	Run began: Fri Jan 26 16:40:06 2024
-	Auto Mode
-	Include fsync in write timing
-	O_DIRECT feature enabled
-	File size set to 81920 kB
-	Record Size 4 kB
-	Command line used: iozone -a -e -I -i 0 -i 1 -i 2 -s 80M -r 4k
-	Output is in kBytes/sec
-	Time Resolution = 0.000001 seconds.
-	Processor cache size set to 1024 kBytes.
-	Processor cache line size set to 32 bytes.
-	File stride size set to 17 * record size.
+    Iozone: Performance Test of File I/O
+            Version $Revision: 3.489 $
+        Compiled for 64 bit mode.
+        Build: linux 
+    Run began: Fri Jan 26 16:40:06 2024
+    Auto Mode
+    Include fsync in write timing
+    O_DIRECT feature enabled
+    File size set to 81920 kB
+    Record Size 4 kB
+    Command line used: iozone -a -e -I -i 0 -i 1 -i 2 -s 80M -r 4k
+    Output is in kBytes/sec
+    Time Resolution = 0.000001 seconds.
+    Processor cache size set to 1024 kBytes.
+    Processor cache line size set to 32 bytes.
+    File stride size set to 17 * record size.
                                                               random    random     bkwd    record    stride                                    
               kB  reclen    write  rewrite    read    reread    read     write     read   rewrite      read   fwrite frewrite    fread  freread
            81920       4     6733     3506    22704    22561    15773     6211                                                                
@@ -200,6 +204,4 @@ IOZone                    4k random write           6211 KB/s
 
 Compare with previous benchmark results at:
 https://pibenchmarks.com/
-
 ```
-

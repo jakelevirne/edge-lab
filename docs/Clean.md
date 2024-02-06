@@ -68,8 +68,6 @@ sudo apt install cloud-utils
 sudo growpart /dev/mmcblk0 2
 sudo resize2fs /dev/mmcblk0
 sudo reboot
-
-
 ```
 
 SSH into the re-imaged machine and make sure the hostname is set correctly:
