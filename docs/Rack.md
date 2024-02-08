@@ -1,6 +1,6 @@
 # Build a Laser Cut Rack
 
-Rather than have a bunch of Raspberry Pis laying out on my desk, I thought it would make sense to build a rack to contain them all nicely together. This [rack from C4 Labs](https://www.amazon.com/Cloudlet-CASE-Raspberry-Computers-Compatible/dp/B0844YSJWB) is very nice and well rated. But since I'm lucky enough to have access to a Glowforge, I thought I'd make my own rack.
+Rather than have a bunch of Raspberry Pis laying out on my desk, I thought it would make sense to build a rack to contain them all nicely together. This [rack from C4 Labs](https://www.amazon.com/Cloudlet-CASE-Raspberry-Computers-Compatible/dp/B0844YSJWB) is well rated and the slotted removable panel design looks useful. But since I'm lucky enough to have access to a Glowforge, I thought I'd make my own rack.
 
 ## Edge Lab Rack v1
 
