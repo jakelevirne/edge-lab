@@ -1,7 +1,5 @@
 # edge-lab
 
-# 
-
 > [!WARNING]
 > This repository is a work in progress.
 
