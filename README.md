@@ -1,5 +1,8 @@
 # edge-lab
+
 ## A dev environment focused on edge computing
+
+This repo contains instructions and scripts for creating a cluster of Raspberry Pis running Kubernetes that can be re-imaged at any time through a set of Ansible and Pulumi scripts.
 
 ## pi0 - router
 
@@ -161,10 +164,6 @@ ping www.cnn.com
 ```bash
 journalctl -p err -b
 ```
-
-
-
-
 
 ## Benchmarking
 
