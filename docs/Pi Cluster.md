@@ -1,20 +1,14 @@
 # Building the Raspberry Pi Cluster
 
-Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own subnet and one of the Pis (pi0) will act as a router to bridge this lab subnet to our home subnet (the one connected to the internet). Though inefficient, we'll use pi0's wireless network adapter to connect to the home internet router and we'll use pi0's ethernet adapter to connect to the lab subnet switch.
+Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own subnet and one of the Pis (pi0) will act as a router to bridge this lab subnet[^1] to our home subnet (the one connected to the internet). Though inefficient, we'll use pi0's wireless network adapter to connect to the home internet router and we'll use pi0's ethernet adapter to connect to the lab subnet switch.
 
 ## Network
 
-The subnets[^1] and other things like that.
+192.168.86.0/24 is our home LAN subnet and 192.168.87.0/24 is our Edge Lab subnet. pi0, once setup properly, will be the router that serves as a bridge between the Lab and Home networks. It will allow all the Pis in the cluster to access the internet and it will allow machines and devices in the Home LAN select access to the cluster.
 
-- One
-- Two
-- Three
-- Four
+![](../media/edge-lab-network.svg)
 
-Other things in the way
-
-
-[^1]: Ask ChatGPT what the thing is
+[^1]: [ChatGPT-What's a Subnet?](https://chat.openai.com/share/f6a06c8a-d1ee-42e5-81fe-21b0141956be)
 
 ## pi0 - router
 

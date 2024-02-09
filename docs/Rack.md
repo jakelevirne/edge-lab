@@ -4,7 +4,7 @@ Rather than have a bunch of Raspberry Pis laying out on my desk, I thought it wo
 
 ## Edge Lab Rack v1
 
-![image RackV1](../media/EdgeLabRackV1.png)
+![image RackV1](../rack/EdgeLabRackV1.png)
 
 It's a little messy, but it gets the job done and makes it easier to transport all the Pis and peripherals in one go.
 
