@@ -93,3 +93,18 @@ sudo systemctl status avahi-daemon
 sudo systemctl start avahi-daemon
 sudo systemctl enable avahi-daemon
 ```
+
+## Wake-on-LAN
+
+It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. This NUC machine supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
+
+On pi0, which should have ethernet connectivity to nuc.local:
+
+```bash
+sudo apt update
+sudo apt install etherwake
+cat /var/lib/misc/dnsmasq.leases
+# Find the MAC address of nuc.local
+sudo etherwake 1c:69:7a:a2:6f:89
+# Replace the above with you're nuc's MAC address
+```

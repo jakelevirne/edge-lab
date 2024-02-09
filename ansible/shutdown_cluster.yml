@@ -1,0 +1,37 @@
+---
+- name: Ensure Vault password is provided
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check for vault access
+      ansible.builtin.debug:
+        msg: "Checking vault access."
+      vars:
+        vault_test: "{{ lookup('ansible.builtin.file', 'secrets.yml') }}"
+      failed_when: vault_test is undefined
+
+- name: Shutdwon pi_hosts
+  hosts: pi_hosts
+  become: yes
+  strategy: free
+  tasks:
+    - name: Shutting down pi hosts
+      ansible.builtin.command: shutdown -h +1
+
+
+- name: Shutdown nfs_hosts
+  hosts: nfs_hosts
+  become: yes
+  vars_files:
+    - secrets.yml
+  strategy: free
+  tasks:
+    - name: Shutting down nfs hosts
+      ansible.builtin.command: shutdown -h +1
+
+- name: Shutting down router host last
+  hosts: router_hosts
+  become: yes
+  tasks:
+    - name: Shutting down router host
+      ansible.builtin.command: shutdown -h +1
