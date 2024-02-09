@@ -1,5 +1,15 @@
 # Building the Raspberry Pi Cluster
 
+Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own subnet and one of the Pis (pi0) will act as a router to bridge this lab subnet to our home subnet (the one connected to the internet). Though inefficient, we'll use pi0's wireless network adapter to connect to the home internet router and we'll use pi0's ethernet adapter to connect to the lab subnet switch.
+
+## Network
+
+The subnets[^1] and other things like that.
+
+
+
+[^1]: Ask ChatGPT what the thing is.
+
 ## pi0 - router
 
 Use the Raspberry Pi imager to image pi0.local
