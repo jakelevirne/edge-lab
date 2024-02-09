@@ -11,13 +11,13 @@ The motivation behind this lab is to explore and learn the tools for handling re
 
 ## Contents
 
-* [Buying or Making a Rack for Your Cluster]("docs/Rack.md")
+* [Buying or Making a Rack for Your Cluster](<docs/Rack.md>)
 
-* [Building the Raspberry Pi Cluster]("docs/Pi Cluster.md")
+* [Building the Raspberry Pi Cluster](<docs/Pi Cluster.md>)
 
-* [Installing Kubernetes]("docs/Kubernetes.md")
+* [Installing Kubernetes](<docs/Kubernetes.md>)
 
-* [Scripting the Pi Cluster for Remote Operations]("docs/Clean.md")
+* [Scripting the Pi Cluster for Remote Operations](<docs/Clean.md>)
 
 * Installing RedPanda (Kafka) and MQTT
 
