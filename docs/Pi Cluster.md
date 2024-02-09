@@ -6,9 +6,15 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 The subnets[^1] and other things like that.
 
+- One
+- Two
+- Three
+- Four
+
+Other things in the way
 
 
-[^1]: Ask ChatGPT what the thing is.
+[^1]: Ask ChatGPT what the thing is
 
 ## pi0 - router
 
