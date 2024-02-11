@@ -2,13 +2,25 @@
 
 Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own subnet and one of the Pis (pi0) will act as a router to bridge this lab subnet[^1] to our home subnet (the one connected to the internet). Though inefficient, we'll use pi0's wireless network adapter to connect to the home internet router and we'll use pi0's ethernet adapter to connect to the lab subnet switch.
 
+## Parts
+
+- Four Raspberry Pis, one for the router (pi0) and three for the cluster (pi1..pi3). I use Raspberry Pi 5s. Other versions may work but haven't been tested.
+
+- A basic switch. I use the [TP-Link TL-SG108PE • 8 Port Gigabit PoE Switch](https://www.amazon.com/gp/product/B01BW0AD1W). But because of the Pi 5's power requirements I haven't had consistent success with power over ethernet (PoE).
+
+- SD Cards, one for each Pi. I use [128GB Amazon Basics Micro SDXC](https://www.amazon.com/gp/product/B08TJRVWV1) though 64GB cards would've been sufficient.
+
+- USB Drive, one for each PI. I use [500GB Samsung T7s](https://www.amazon.com/gp/product/B0874Y1FZZ) for pi1..pi3, which run pretty fast, and a [128GB Thkailar USB stick](https://www.amazon.com/gp/product/B07SW2S5XX), which does not. See [Performance](Performance.md) for benchmarking.
+
+- 
+
 ## Network
 
 192.168.86.0/24 is our home LAN subnet and 192.168.87.0/24 is our Edge Lab subnet. pi0, once setup properly, will be the router that serves as a bridge between the Lab and Home networks. It will allow all the Pis in the cluster to access the internet and it will allow machines and devices in the Home LAN select access to the cluster.
 
 ![](../media/edge-lab-network.svg)
 
-[^1]: [ChatGPT-What's a Subnet?](https://chat.openai.com/share/f6a06c8a-d1ee-42e5-81fe-21b0141956be)
+[^1]: [ChatGPT-What's a subnet? What does 192.168.86.0/24 mean? Is there something special about 192.168?](https://chat.openai.com/share/d146774e-6da8-48c8-8bc5-88791f5e4ad4)
 
 ## pi0 - router
 
@@ -337,3 +349,7 @@ Tips:
 
 - OVMF UEFI
 - recommend configured virtio-scsi-pci (VirtIO SCSI)
+
+## Setting Up Remote SSH with Cloudflare Tunnel
+
+[SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
