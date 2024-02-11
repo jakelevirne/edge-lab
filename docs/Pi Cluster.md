@@ -353,3 +353,13 @@ Tips:
 ## Setting Up Remote SSH with Cloudflare Tunnel
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
+
+## Powering Up Cluster
+
+[Getting started &mdash; python-kasa documentation](https://python-kasa.readthedocs.io/en/stable/index.html)
+
+```bash
+pip install python-kasa
+kasa discover
+kasa --host <ip address> <command>
+```
