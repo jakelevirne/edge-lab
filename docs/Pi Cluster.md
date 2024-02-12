@@ -2,17 +2,25 @@
 
 Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own subnet and one of the Pis (pi0) will act as a router to bridge this lab subnet[^1] to our home subnet (the one connected to the internet). Though inefficient, we'll use pi0's wireless network adapter to connect to the home internet router and we'll use pi0's ethernet adapter to connect to the lab subnet switch.
 
+## Goals
+
+- The cluster should be able to run K8s, RedPanda (Kafka) and all the other tools we want.
+
+- It should be fast and easy to get the cluster back to a clean initial state.
+
+- We should be able to administer the cluster fully remotely, with no need to physically interact with it (e.g. put it in a closet).
+
 ## Parts
 
 - Four Raspberry Pis, one for the router (pi0) and three for the cluster (pi1..pi3). I use Raspberry Pi 5s. Other versions may work but haven't been tested.
+
+- Full 27 watt power supplies (5.1V, 5a). Given our desire to USB boot, this is the best way to ensure stability.
 
 - A basic switch. I use the [TP-Link TL-SG108PE • 8 Port Gigabit PoE Switch](https://www.amazon.com/gp/product/B01BW0AD1W). But because of the Pi 5's power requirements I haven't had consistent success with power over ethernet (PoE).
 
 - SD Cards, one for each Pi. I use [128GB Amazon Basics Micro SDXC](https://www.amazon.com/gp/product/B08TJRVWV1) though 64GB cards would've been sufficient.
 
 - USB Drive, one for each PI. I use [500GB Samsung T7s](https://www.amazon.com/gp/product/B0874Y1FZZ) for pi1..pi3, which run pretty fast, and a [128GB Thkailar USB stick](https://www.amazon.com/gp/product/B07SW2S5XX), which does not. See [Performance](Performance.md) for benchmarking.
-
-- 
 
 ## Network
 
@@ -22,7 +30,25 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 [^1]: [ChatGPT-What's a subnet? What does 192.168.86.0/24 mean? Is there something special about 192.168?](https://chat.openai.com/share/d146774e-6da8-48c8-8bc5-88791f5e4ad4)
 
+## Prepare Cluster
+
+One of the goals for this cluster is to be able to wipe it clean to quickly get it back to its initial state without having to physically touch the machines. This allows us to play and experiment more easily. 
+
+The general approach we take here for resetting the cluster is cloning and restoring clean disk images using Clonezilla. The reason for this choice is that Clonezilla is nicely scriptable from the command line while other tools, like the [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) or [balenaEtcher](https://etcher.balena.io/) are not. 
+
+
+
+### Set all Pis to USB Boot Mode
+
+While there are several ways to change the [boot order](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER) of the Pis, the most consistent approach I've found is to use [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) to create an SD card with the USB Boot bootloader EEPROM config. 
+
+Start the imager, select your device (Raspberry Pi 5), for Operating System choose `Misc utility images` →
+
+
+
 ## pi0 - router
+
+This Raspberry Pi will be used as the network router, bridging the Edge and Home subnets. It shouldn't need as much storage as the cluster nodes, so we'll use the 128 GB USB stick for it. Like all the Pis in the cluster, we use two storage device (SD card and USB) in order to create an imag
 
 Use the Raspberry Pi imager to image pi0.local
 

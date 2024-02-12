@@ -3,6 +3,10 @@
   hosts: pi_hosts
   become: yes  # This is required to gain root privileges
   tasks:
+    - name: Pause and prompt the user to confirm
+      pause:
+        prompt: "This will ERASE all pi_hosts. Ctrl-C to stop or any other key to continue."
+        
     - name: Unmount /dev/sda1
       ansible.builtin.mount:
         path: /boot/firmware  # Assuming /dev/sda1 is mounted at /mnt/sda1; adjust if necessary

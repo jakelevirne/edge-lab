@@ -104,3 +104,9 @@ To run this playbook:
 ```bash
 ansible-playbook -i hosts.ini install_microk8s.yml
 ```
+
+To run playbooks that require a secret:
+
+```bash
+ansible-playbook -i hosts.ini --ask-vault-pass reboot_cluster.yml
+```

@@ -1,5 +1,5 @@
 ---
-- name: Install and Configure MicroK8s Cluster
+- name: Join MicroK8s Nodes into Cluster
   hosts: pi_hosts
   become: yes
   tasks:
