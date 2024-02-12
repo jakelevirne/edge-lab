@@ -32,19 +32,39 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 ## Prepare Cluster
 
-One of the goals for this cluster is to be able to wipe it clean to quickly get it back to its initial state without having to physically touch the machines. This allows us to play and experiment more easily. 
+One of the goals for this cluster is to be able to wipe it clean to quickly get it back to its initial state without having to physically touch the machines. This allows us to play and experiment more easily. We'll use an approach of enabling each of the Pis to dual-boot, either into the USB drive for normal operations or into the SD card when we need to re-image the machines. This setup requires several one-time steps.
 
-The general approach we take here for resetting the cluster is cloning and restoring clean disk images using Clonezilla. The reason for this choice is that Clonezilla is nicely scriptable from the command line while other tools, like the [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) or [balenaEtcher](https://etcher.balena.io/) are not. 
-
-
-
-### Set all Pis to USB Boot Mode
+### Set all Pis to USB Boot Mode preference
 
 While there are several ways to change the [boot order](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER) of the Pis, the most consistent approach I've found is to use [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) to create an SD card with the USB Boot bootloader EEPROM config. 
 
-Start the imager, select your device (Raspberry Pi 5), for Operating System choose `Misc utility images` →
+Start the imager, select your device (Raspberry Pi 5), for Operating System choose `Misc utility images` → `Bootloader` → `USB Boot`. Choose Storage and select your SD card.
 
+With everything else disconnected, put this SD card into each Pi one by one, powering each one up in turn. Look for the green blinking light on the Pi to indicate the the bootloader flashed appropriately. (If you happen to have a monitor connected, you'll see the monitor show green).
 
+This will set each Pi to prefer the USB device for booting. But the Pis will still boot from an SD card if the USB device is not present or bootable. We'll use this fact to allow us to change the boot disk when needed.
+
+### Create `imager` SD cards
+
+We'll leave SD cards in each of the Pis that can be used whenever needed to re-image the attached USB drives. During normal operation, these SD cards won't be used. But whenever a Pi has no bootable USB drive attached, the `imager` SD card will kick in as the boot device.
+
+For each device, pi0 ... pi3, use the Raspberry Pi Imager to create these SD cards. 
+
+Start the imager, select your device (Raspberry Pi 5), for Operating System choose `Raspberry Pi OS (other)` → `Raspberry Pi OS Lite (64-bit)`. Choose Storage and select your SD card. Hit Next.
+
+Customize the OS by choosing `Edit Settings` and then select the following options:
+
+- ☑Set hostname: `imager0`.local
+
+- ☐ Leave 
+
+### Setup an NFS device
+
+You'll need a consistent location on the network for storing your clean disk images.
+
+### Create Clean Images
+
+The general approach we take here for resetting the cluster is cloning and restoring clean disk images using Clonezilla. The reason for this choice is that Clonezilla is nicely scriptable from the command line while other tools, like the [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) or [balenaEtcher](https://etcher.balena.io/) are not.
 
 ## pi0 - router
 
