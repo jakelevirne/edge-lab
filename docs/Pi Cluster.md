@@ -54,13 +54,50 @@ Start the imager, select your device (Raspberry Pi 5), for Operating System choo
 
 Customize the OS by choosing `Edit Settings` and then select the following options:
 
-- ☑Set hostname: `imager0`.local
+- ☑ Set hostname: `imager0`.local
+  
+  - For each of the cards, this is the only thing that changes. Use `imager1`, `imager2`, `imager3` for the next three.
 
-- ☐ Leave 
+- ☐ Set username and password (leave unchecked)
+
+- ☑ Configure wireless LAN
+  
+  - Set your home router's SSID and password
+  
+  - Set your Wireless LAN country
+  
+  - (When in imaging mode, the Pis will connect to your home LAN)
+
+- ☑ Set local settings
+  
+  - Enter your timezone and keyboard layout
+
+- Click the Services tab
+
+- ☑ Enable SSH
+  
+  - Allow public-key authentication only (it's more secure)
+  
+  - Paste in your public key
+  
+  - Go back to the General tab and make sure 'Set username and password' is still unchecked
+
+SSH key setup is a complex topic in and of itself. If you don't already have and use SSH keys, then this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-create-ssh-keys-with-openssh-on-macos-or-linux) walks through the process of creating new ones. If you change any of the defaults during key generation (e.g. a different key filename or non-blank passphrase), you should edit/create your `~/.ssh/config` file to match. For example, mine looks like this because I have a custom identity filename, and I used a passphrase, and I'm on a Mac which let's me use the Keychain to store the passphrase:
+
+```bash
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_default
+```
+
+For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) I created in ChatGPT. 
 
 ### Setup an NFS device
 
-You'll need a consistent location on the network for storing your clean disk images.
+You'll need a location for storing your clean disk images. One option would be another USB drive that you plug in and out of each of the machines when imaging. But that defeats our goal of fully remote cluster management. Instead we'll setup an NFS share. In my lab, an Intel NUC acts as an NFS server and a database server. Follow the instructions for setting up the [Storage Server](<Storage Server.md>).
+
+Alternatively, you could setup an NFS share from your laptop. For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant).
 
 ### Create Clean Images
 
