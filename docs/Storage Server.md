@@ -170,9 +170,9 @@ On pi0, add a reserved IP for this server:
 
 ```
 sudo nano /etc/dnsmasq.conf
-# Add line for nuc db server
-# nuc
-dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,nuc
+# Add line for data1 db server
+# data1
+dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
 
 # restart dnsmasq
 sudo systemctl restart dnsmasq
@@ -182,15 +182,15 @@ sudo systemctl restart dnsmasq
 
 ## Wake-on-LAN
 
-It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. This NUC machine supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
+It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. This NUC machine (data1) supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
 
-On pi0, which should have ethernet connectivity to nuc:
+On pi0, which should have ethernet connectivity to data1:
 
 ```bash
 sudo apt update
 sudo apt install etherwake
 cat /var/lib/misc/dnsmasq.leases
-# Find the MAC address of nuc
+# Find the MAC address of data1
 sudo etherwake 1c:69:7a:a2:6f:89
-# Replace the above with you're nuc's MAC address
+# Replace the above with you're data1 MAC address
 ```

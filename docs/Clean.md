@@ -24,7 +24,7 @@ All pi's have their bootloader set to boot from USB first and then backoff to SD
 
 SSH in to the pi that's been booted with the imager media.
 
-Ensure the nuc/srv/os_images NFS is available:
+Ensure the data1/srv/os_images NFS is available:
 
 ```
 showmount -e 192.168.86.202
@@ -44,7 +44,7 @@ sudo clonezilla
 
 SSH in to the pi that's been booted with the imager media.
 
-Ensure the nuc/srv/os_images NFS is available:
+Ensure the data1/srv/os_images NFS is available:
 
 ```
 showmount -e 192.168.86.202
@@ -100,7 +100,7 @@ sudo apt install tmux
 
 SSH in to the pi that's been booted with the imager media.
 
-Ensure the nuc/srv/os_images NFS is available:
+Ensure the data1/srv/os_images NFS is available:
 
 ```
 showmount -e 192.168.87.2
@@ -129,10 +129,10 @@ sudo mkfs.vfat /dev/sda1
 
 SSH in to the pi that's been booted with the imager media (e.g. `ssh imager1)`.
 
-Ensure the nuc/srv/os_images NFS is available:
+Ensure the data1/srv/os_images NFS is available:
 
 ```
-showmount -e nuc
+showmount -e data1
 ```
 
 Run clonezilla to restore
@@ -142,7 +142,7 @@ sudo apt install clonezilla
 #sudo clonezilla
 # work through it step-by-step or, instead run these commands, updating img name and volume as appropriate
 sudo mkdir -p /home/partimag
-sudo mount nuc:/srv/os_images /home/partimag
+sudo mount data1:/srv/os_images /home/partimag
 
 sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch restoredisk pi1-2024-01-31-img sda
 # sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda

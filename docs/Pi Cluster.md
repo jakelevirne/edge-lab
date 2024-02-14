@@ -290,11 +290,11 @@ journalctl -p err -b
 
 ## NAS
 
-This is setup on my NUC (aka nucnas). Did as follows:
+This is setup on my NUC (aka data1). Did as follows:
 
 Installed Ubuntu Server 22.04.3 LTS using balenaEtcher to create a bootable USB and going through the install. First time through failed, but after upgrading the installer (which is an optional step in the install process itself), things went smoothly.
 
-Through my home router, I gave nucnas a reserved IP
+Through my home router, I gave data1 a reserved IP
 
 Then, I ran these commands:
 

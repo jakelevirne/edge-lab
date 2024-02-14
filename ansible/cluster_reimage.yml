@@ -21,7 +21,7 @@
     - name: Mount OS images directory
       ansible.builtin.mount:
         path: /home/partimag
-        src: nuc:/srv/os_images
+        src: data1:/srv/os_images
         fstype: nfs
         state: mounted
         opts: defaults
