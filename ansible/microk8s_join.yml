@@ -6,13 +6,13 @@
     - name: Generate MicroK8s join command on the master
       ansible.builtin.command: /snap/bin/microk8s add-node --token-ttl 120
       register: join_command
-      when: inventory_hostname == 'pi1.local'
+      when: inventory_hostname == 'pi1'
       run_once: true
 
     - name: Parse the join command
       set_fact:
         microk8s_join_command: "{{ join_command.stdout.split('\n') | select('match', '^microk8s join') | first }}"
-      when: inventory_hostname == 'pi1.local'
+      when: inventory_hostname == 'pi1'
 
     - name: Write microk8s join command to a local file for sharing
       ansible.builtin.copy:
@@ -22,7 +22,7 @@
       delegate_to: localhost
       become: no
       run_once: true
-      when: inventory_hostname == 'pi1.local'
+      when: inventory_hostname == 'pi1'
 
     - name: Read microk8s join command from local file on other nodes
       ansible.builtin.slurp:
@@ -30,16 +30,16 @@
       register: join_cmd_file
       delegate_to: localhost
       become: no
-      when: inventory_hostname != 'pi1.local'
+      when: inventory_hostname != 'pi1'
 
     - name: Set microk8s join command fact from file on other nodes
       set_fact:
         microk8s_join_command: "/snap/bin/{{ join_cmd_file['content'] | b64decode }}"
-      when: inventory_hostname != 'pi1.local'
+      when: inventory_hostname != 'pi1'
 
     - name: Join to the MicroK8s cluster on other nodes
       ansible.builtin.command: "{{ microk8s_join_command }}"
-      when: inventory_hostname != 'pi1.local' and microk8s_join_command is defined
+      when: inventory_hostname != 'pi1' and microk8s_join_command is defined
 
     - name: Reboot all machines to apply changes
       ansible.builtin.reboot:

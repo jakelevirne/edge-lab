@@ -32,7 +32,7 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 ## A Note About Machine Names
 
-With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname.local`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
+With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
 
 Throughout these instructions and in the included scripts I use just `hostname` to refer to specific machines. This should generally work regardless of which approach you use for local hostname resolution. But if it's not working for you, switch to using IP addresses (static or DHCP reserved) or ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
 
@@ -60,7 +60,7 @@ Start the imager, select your device (Raspberry Pi 5), for Operating System choo
 
 Customize the OS by choosing `Edit Settings` and then select the following options:
 
-- ☑ Set hostname: `imager0`.local
+- ☑ Set hostname: `imager0`
   
   - For each of the cards, this is the only thing that changes. Use `imager1`, `imager2`, `imager3` for the next three.
 
@@ -99,7 +99,7 @@ Host *
 
 For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) in ChatGPT. 
 
-You can insert these SD cards into your Pis and power all of them on. Make sure no USB drives or sticks are inserted otherwise the Pis will attempt to boot from them instead of the SD cards. Once booted, you should be able to SSH into any of these using something like `ssh pi@imager0.local`.
+You can insert these SD cards into your Pis and power all of them on. Make sure no USB drives or sticks are inserted otherwise the Pis will attempt to boot from them instead of the SD cards. Once booted, you should be able to SSH into any of these using something like `ssh pi@imager0`.
 
 ### Setup an NFS device
 
@@ -117,7 +117,7 @@ On your laptop, use Raspberry Pi Imager, exactly as above with these changes:
 
 - Insert a USB stick instead of an SD card into your laptop
 
-- Set the hostname to `changeme`.local
+- Set the hostname to `changeme`
 
 Do NOT boot this USB stick. It'll serve as the source for our Clonezilla clean image. Instead, boot up `imager0` using its SD card, and only after bootup has completed, insert this USB stick into `imager0`. Now we can use Clonezilla to backup the `changeme` Raspberry Pi OS image to NFS.
 
@@ -125,11 +125,11 @@ Do NOT boot this USB stick. It'll serve as the source for our Clonezilla clean i
 
 This Raspberry Pi will be used as the network router, bridging the Edge and Home subnets. It shouldn't need as much storage as the cluster nodes, so we'll use the 128 GB USB stick for it. Like all the Pis in the cluster, we use two storage device (SD card and USB) in order to create an imag
 
-Use the Raspberry Pi imager to image pi0.local
+Use the Raspberry Pi imager to image pi0
 
 - Device: Raspberry Pi 5, OS: Raspberry Pi OS Lite (64-bit), Storage: SD card
 - Edit Settings
-  - Set hostname to pi0.local
+  - Set hostname to pi0
   - Uncheck username and password
   - Configure wireless lan
   - Set locale settings
@@ -230,7 +230,7 @@ dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
 
 ## pi1 .. piN cluster servers
 
-Use the Raspberry Pi imager to image pi1.local through piN.local
+Use the Raspberry Pi imager to image pi1 through piN
 
 - Follow the same steps as above, but uncheck Configure wireless lan
 
@@ -238,7 +238,7 @@ Connect this pi to the same switch as pi0 and power up
 
 ```
 # from laptop, proxyjump to pi1
-ssh -J pi@pi0.local pi@pi1.local
+ssh -J pi@pi0 pi@pi1
 sudo apt update
 sudo apt upgrade
 # check locale and datetime
@@ -264,7 +264,7 @@ sudo reboot
 Test as follows:
 
 ```
-ssh pi@pi0.local
+ssh pi@pi0
 # check the dhcp leases
 cat /var/lib/misc/dnsmasq.leases
 ping <ip-address-of-pi1>
@@ -290,7 +290,7 @@ journalctl -p err -b
 
 ## NAS
 
-This is setup on my NUC (aka nucnas.local). Did as follows:
+This is setup on my NUC (aka nucnas). Did as follows:
 
 Installed Ubuntu Server 22.04.3 LTS using balenaEtcher to create a bootable USB and going through the install. First time through failed, but after upgrading the installer (which is an optional step in the install process itself), things went smoothly.
 

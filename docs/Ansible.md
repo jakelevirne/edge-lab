@@ -15,20 +15,20 @@ Host *
   IdentityFile ~/.ssh/id_git
 
 
-Host pi0.local
+Host pi0
   User pi
 
-Host pi1.local
+Host pi1
   User pi
-  ProxyJump pi0.local
+  ProxyJump pi0
 
-Host pi2.local
+Host pi2
   User pi
-  ProxyJump pi0.local
+  ProxyJump pi0
 
-Host pi3.local
+Host pi3
   User pi
-  ProxyJump pi0.local
+  ProxyJump pi0
 ```
 
 ### Configure ansible
@@ -52,9 +52,9 @@ nano hosts.ini
 
 ```bash
 [pi_hosts]
-pi1.local
-pi2.local
-pi3.local
+pi1
+pi2
+pi3
 ```
 
 ### Playbook for installing MicroK8s on pi1..piN

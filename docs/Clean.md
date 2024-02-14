@@ -127,12 +127,12 @@ sudo umount /dev/sda1
 sudo mkfs.vfat /dev/sda1
 ```
 
-SSH in to the pi that's been booted with the imager media (e.g. `ssh imager1.local)`.
+SSH in to the pi that's been booted with the imager media (e.g. `ssh imager1)`.
 
 Ensure the nuc/srv/os_images NFS is available:
 
 ```
-showmount -e nuc.local
+showmount -e nuc
 ```
 
 Run clonezilla to restore
@@ -142,7 +142,7 @@ sudo apt install clonezilla
 #sudo clonezilla
 # work through it step-by-step or, instead run these commands, updating img name and volume as appropriate
 sudo mkdir -p /home/partimag
-sudo mount nuc.local:/srv/os_images /home/partimag
+sudo mount nuc:/srv/os_images /home/partimag
 
 sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch restoredisk pi1-2024-01-31-img sda
 # sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p choose restoredisk pi1-2024-01-31-img sda

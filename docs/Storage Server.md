@@ -84,7 +84,7 @@ sudo reboot
 ```
 
 ```bash
-ssh pi@data1.local 
+ssh pi@data1 
 ```
 
 ### Run OS Updates
@@ -111,7 +111,7 @@ sudo update-grub;
 
 ## Configure Networking
 
-We'll create a simple hostname we can use (`data1.local`) with avahi zeroconf. 
+We'll create a simple hostname we can use (`data1`) with avahi zeroconf. 
 
 ###### Make Network Interfaces Optional (Speedup Boot)
 
@@ -184,13 +184,13 @@ sudo systemctl restart dnsmasq
 
 It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. This NUC machine supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
 
-On pi0, which should have ethernet connectivity to nuc.local:
+On pi0, which should have ethernet connectivity to nuc:
 
 ```bash
 sudo apt update
 sudo apt install etherwake
 cat /var/lib/misc/dnsmasq.leases
-# Find the MAC address of nuc.local
+# Find the MAC address of nuc
 sudo etherwake 1c:69:7a:a2:6f:89
 # Replace the above with you're nuc's MAC address
 ```

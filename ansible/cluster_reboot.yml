@@ -15,7 +15,7 @@
   hosts: router_hosts
   become: yes
   tasks:
-    - name: Rebooting pi0.local
+    - name: Rebooting pi0
       ansible.builtin.reboot:
 
 - name: Reboot pi_hosts in parallel
