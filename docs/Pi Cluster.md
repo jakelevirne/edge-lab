@@ -30,6 +30,12 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 [^1]: [ChatGPT-What's a subnet? What does 192.168.86.0/24 mean? Is there something special about 192.168?](https://chat.openai.com/share/d146774e-6da8-48c8-8bc5-88791f5e4ad4)
 
+## A Note About Machine Names
+
+With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname.local`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
+
+Throughout these instructions and in the included scripts I use just `hostname` to refer to specific machines. This should generally work regardless of which approach you use for local hostname resolution. But if it's not working for you, switch to using IP addresses (static or DHCP reserved) or ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
+
 ## Prepare Cluster
 
 One of the goals for this cluster is to be able to wipe it clean to quickly get it back to its initial state without having to physically touch the machines. This allows us to play and experiment more easily. We'll use an approach of enabling each of the Pis to dual-boot, either into the USB drive for normal operations or into the SD card when we need to re-image the machines. This setup requires several one-time steps.
@@ -48,7 +54,7 @@ This will set each Pi to prefer the USB device for booting. But the Pis will sti
 
 We'll leave SD cards in each of the Pis that can be used whenever needed to re-image the attached USB drives. During normal operation, these SD cards won't be used. But whenever a Pi has no bootable USB drive attached, the `imager` SD card will kick in as the boot device.
 
-For each device, pi0 ... pi3, use the Raspberry Pi Imager to create these SD cards. 
+For each device, pi0 ... pi3, use the Raspberry Pi Imager on your laptop to create these SD cards. 
 
 Start the imager, select your device (Raspberry Pi 5), for Operating System choose `Raspberry Pi OS (other)` → `Raspberry Pi OS Lite (64-bit)`. Choose Storage and select your SD card. Hit Next.
 
@@ -91,7 +97,9 @@ Host *
   IdentityFile ~/.ssh/id_default
 ```
 
-For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) I created in ChatGPT. 
+For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) in ChatGPT. 
+
+You can insert these SD cards into your Pis and power all of them on. Make sure no USB drives or sticks are inserted otherwise the Pis will attempt to boot from them instead of the SD cards. Once booted, you should be able to SSH into any of these using something like `ssh pi@imager0.local`.
 
 ### Setup an NFS device
 
@@ -99,9 +107,19 @@ You'll need a location for storing your clean disk images. One option would be a
 
 Alternatively, you could setup an NFS share from your laptop. For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant).
 
-### Create Clean Images
+### 
 
-The general approach we take here for resetting the cluster is cloning and restoring clean disk images using Clonezilla. The reason for this choice is that Clonezilla is nicely scriptable from the command line while other tools, like the [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) or [balenaEtcher](https://etcher.balena.io/) are not.
+### Create a Clean Image
+
+The general approach we take here for resetting the cluster is cloning and restoring a clean disk image using Clonezilla. The reason for this choice is that Clonezilla is nicely scriptable from the command line while other tools, like the [Raspberry Pi Imager](https://github.com/raspberrypi/rpi-imager) or [balenaEtcher](https://etcher.balena.io/) are not. An alternative approach would be to work with [Raspberry Pi OS images](https://www.raspberrypi.com/software/operating-systems/) directly, hand-coding cmdline.txt and firstrun.sh, and using a tool like `dd`. But that feels like a brittle re-implementation of Raspberry Pi Imager. Instead we'll use the Pi Imager to create a nearly fully configured USB disk and then back that up as our clean starting point for lab machines.
+
+On your laptop, use Raspberry Pi Imager, exactly as above with these changes:
+
+- Insert a USB stick instead of an SD card into your laptop
+
+- Set the hostname to `changeme`.local
+
+Do NOT boot this USB stick. It'll serve as the source for our Clonezilla clean image. Instead, boot up `imager0` using its SD card, and only after bootup has completed, insert this USB stick into `imager0`. Now we can use Clonezilla to backup the `changeme` Raspberry Pi OS image to NFS.
 
 ## pi0 - router
 
@@ -446,3 +464,7 @@ pip install python-kasa
 kasa discover
 kasa --host <ip address> <command>
 ```
+
+## Notes
+
+Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh

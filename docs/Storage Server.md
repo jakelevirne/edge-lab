@@ -25,12 +25,12 @@ Ideally in the future, imaging the storage server will be automated just like it
         - For both drives, select the `free space` → `Add GPT Partition`, leave the Size blank to use the max, under Format choose `Leave unformatted`, and Create.
         - Now choose `Create software RAID` and leave as `md0` RAID Level 1. Select partition 2 under both of your hard drives (not the USB), and Create.
       - For /boot, swap, and / (root)
-        - `Create volume group (LVM)`, leave all options unchanges, and Create.
+        - `Create volume group (LVM)`, select `md0`, leave all options unchanged, and Create.
           - `swap` - Under the resulting `vg0` device, select the `free space` → `Create Logical Volume` , set the size to 32G (or twice your machine's RAM), select `swap` as the Format and Create.
           - `/boot` - Again, under the `vg0` device, select the `free space` → `Create Logical Volume` , set the size to 1G, select `ext4` as the Format, `/boot` as the Mount and Create.
           - `/` (root) - Again, under the `vg0` device, select the `free space` → `Create Logical Volume` , leave the size blank for the max, select `ext4` as the Format, `/` as the Mount and Create.
     - Done
-  - I chose `stor1` as the machine name and `pi` as my username. All the rest of the instructions and scripts here assume these names.
+  - I chose `data1` as the machine name and `pi` as my username. All the rest of the instructions and scripts here assume these names.
   - Install OpenSSH server
   - - It's pretty neat to just import your SSH identity. Since my public key is [added](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) to my Github, I just point the installer to my Github username and everything just works.
     - If you use the above import approach, then do NOT allow password authentication over SSH. There's no need, and it's less secure.
@@ -65,13 +65,41 @@ nvme0n1         259:0    0   1.8T  0 disk
 
 ## Initial Housekeeping
 
+### Simple (zeroconf) DNS
+
+Now we can setup Avahi for local mDNS/zeroconf name resolution, just like on the Pis.
+
+```bash
+sudo apt install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
+sudo systemctl status avahi-daemon
+# if needed:
+sudo systemctl start avahi-daemon
+sudo systemctl enable avahi-daemon
+```
+
+Now you can reboot and SSH back in using the machine name
+
+```bash
+sudo reboot
+```
+
+```bash
+ssh pi@data1.local 
+```
+
 ### Run OS Updates
 
-On stor1, update all packages:
+On data1, update all packages:
 
 ```
 sudo apt update
 sudo apt upgrade
+```
+
+Set the timezone of the machine. (Replace `America/New_York` with your timezone).
+
+```bash
+sudo timedatectl set-timezone America/New_York
 ```
 
 ### Update GRUB Boot Menu Timeout (Speedup Boot)
@@ -83,21 +111,11 @@ sudo update-grub;
 
 ## Configure Networking
 
-We'll create a simple hostname we can use (`stor1.local`) with avahi zeroconf. 
+We'll create a simple hostname we can use (`data1.local`) with avahi zeroconf. 
 
-### Simple Hostname
+###### Make Network Interfaces Optional (Speedup Boot)
 
-```bash
-sudo apt install avahi-daemon
-sudo systemctl status avahi-daemon
-# if needed:
-sudo systemctl start avahi-daemon
-sudo systemctl enable avahi-daemon
-```
-
-### Make Network Interfaces Optional (Speedup Boot)
-
-On stor1, make all network adapters optional so Ubuntu doesn't wait for them on boot. Edit files like `/etc/netplan/00-installer-config.yaml` (and others in the `etc/netplan` directory) to have `optional: true` defined for any interfaces that are optional. Like this:
+On data1, make all network adapters optional so Ubuntu doesn't wait for them on boot. Edit files like `/etc/netplan/00-installer-config.yaml` (and others in the `etc/netplan` directory) to have `optional: true` defined for any interfaces that are optional. Like this:
 
 ```bash
 sudo nano /etc/netplan/00-installer-config.yaml
@@ -122,22 +140,10 @@ network:
   wifis:
     wlp0s20f3:
       access-points:
-        poshifi:
-          password: 2napalicoast
+        <your SSID>:
+          password: <your password>
       dhcp4: true
       optional: true
-```
-
-
-
-Now you can reboot and SSH back in using the machine name
-
-```bash
-sudo reboot
-```
-
-```bash
-ssh pi@stor1.local 
 ```
 
 ## Create a share folder for OS images
@@ -156,17 +162,9 @@ sudo systemctl restart nfs-kernel-server
 sudo chmod 777 /srv/os_images
 ```
 
+## 
 
-
-
-
-
-
-
-
-
-
-## Configure Connection to Lab Network
+## OLD Configure Connection to Lab Network
 
 On pi0, add a reserved IP for this server:
 
@@ -180,11 +178,7 @@ dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,nuc
 sudo systemctl restart dnsmasq
 ```
 
-
-
 ## Disable Wifi Connection
-
-
 
 ## Wake-on-LAN
 
@@ -200,5 +194,3 @@ cat /var/lib/misc/dnsmasq.leases
 sudo etherwake 1c:69:7a:a2:6f:89
 # Replace the above with you're nuc's MAC address
 ```
-
-### 
