@@ -8,8 +8,16 @@
         update_cache: yes
         upgrade: yes
 
+    - name: Check if 'lan' connection exists
+      command: nmcli con show lan
+      register: lan_connection_check
+      ignore_errors: yes
+      changed_when: False
+
     - name: Add LAN connection for eth0
       command: nmcli con add type ethernet con-name lan ifname eth0
+      when: lan_connection_check.rc != 0
+
 
     - name: Configure LAN connection with static IP
       command: "{{ item }}"
@@ -53,3 +61,29 @@
           interface=eth0
           dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
         marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
+    - name: Ensure DHCP reservations are set in /etc/dnsmasq.conf
+      blockinfile:
+        path: /etc/dnsmasq.conf
+        block: |
+          # pi1
+          dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
+          # pi2
+          dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
+          # pi3
+          dhcp-host=d8:3a:dd:e9:d4:3e,192.168.87.103,pi3
+        marker: "# {mark} ANSIBLE MANAGED BLOCK FOR DHCP RESERVATIONS"
+        backup: yes
+
+
+    - name: Restart dnsmasq service
+      systemd:
+        name: dnsmasq
+        state: restarted
+        daemon_reload: yes
+
+    - name: Restart NetworkManager service
+      systemd:
+        name: NetworkManager
+        state: restarted
+        daemon_reload: yes

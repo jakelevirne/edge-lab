@@ -42,7 +42,7 @@
 
     - name: Run ocs-sr with auto-confirmation via yes
       ansible.builtin.shell:
-        cmd: yes | sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch -nogui -scr restoredisk pi1-2024-01-31-img sda
+        cmd: yes | sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch -nogui -scr restoredisk pi-img sda
       become: yes
 
 
@@ -58,7 +58,7 @@
         fstype: auto
         state: mounted
 
-    - name: Update /etc/hosts to replace pi1 with appropriate pi<number>
+    - name: Update firstrun.sh to replace changeme with appropriate pi<number>
       ansible.builtin.replace:
         path: /mnt/sda1/firstrun.sh
         regexp: 'changeme'

@@ -1,0 +1,29 @@
+---
+- name: Erase and format /dev/sda1 and then reboot
+  hosts: router_hosts
+  become: yes  # This is required to gain root privileges
+  tasks:
+    - name: Pause and prompt the user to confirm
+      pause:
+        prompt: "This will ERASE the router host. NETWORK CHAOS MAY ENSUE. Ctrl-C to stop or any other key to continue."
+        
+    - name: Unmount /dev/sda1
+      ansible.builtin.mount:
+        path: /boot/firmware  # Assuming /dev/sda1 is mounted at /mnt/sda1; adjust if necessary
+        src: /dev/sda1
+        fstype: auto
+        state: unmounted
+
+    - name: Format /dev/sda1 as FAT
+      ansible.builtin.command:
+        cmd: mkfs.vfat /dev/sda1
+      register: format_result
+
+    - name: Show format result
+      ansible.builtin.debug:
+        msg: "{{ format_result.stdout }}"
+
+    - name: Schedule a reboot in one minute (fire and forget)
+      ansible.builtin.command:
+        cmd: shutdown -r +1
+      ignore_errors: yes

@@ -155,6 +155,8 @@ Now you should have a backup image of your clean Raspberry Pi OS image that's ne
 
 ### Setup pi0 as our Lab Router
 
+Make sure `pi0` ethernet is connected to your lab switch and the switch is powered on. Now's a good time to connect all of your Pis to the switch.
+
 SSH in to `imager0` if you're not already and ensure the USB stick is still inserted. Now modify the configuration so that the hostname is properly set to `pi0` at initial boot.
 
 ```bash
@@ -162,7 +164,6 @@ sudo mkdir -p /mnt/sda1
 sudo mount /dev/sda1 /mnt/sda1 
 sudo nano /mnt/sda1/firstrun.sh
 # Find and replace (Ctrl-\) all instances of changeme with pi0
-
 ```
 
 Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image.
@@ -195,36 +196,31 @@ sudo netfilter-persistent save
 # install dhcp server
 sudo apt install dnsmasq
 # Edit /etc/dnsmasq.conf
-# first move the existing one. it only contains comments.
-sudo mv /etc/dnsmasq.conf /etc/dnsmasq.BAK.conf
 sudo nano /etc/dnsmasq.conf
-# Add the following lines to a new blank /etc/dnsmasq.conf
+# Add the following lines to the end of /etc/dnsmasq.conf
 interface=eth0
 dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
 
+# Reserved IPs
+# In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
+sudo nano /etc/dnsmasq.conf
+# You'll need the MAC address of each Pi's ethernet interface.
+# Add lines that look like these. 
+# pi1
+dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
+# pi2
+dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
+# pi3
+dhcp-host=d8:3a:dd:e9:d4:3e,192.168.87.103,pi3
 
 
 # restart dnsmasq
 sudo systemctl restart dnsmasq
 # apply all configurations
 sudo systemctl restart NetworkManager
-
-# Static IPs
-# In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
-cat /var/lib/misc/dnsmasq.leases
-sudo nano /etc/dnsmasq.conf
-# Add lines that look like:
-# pi1
-dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
-
-# pi2
-dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
-
-
-
-#TODO: IPv6
-#chatgpt prompt: I'm following these steps to configure my headless raspberry pi as a router. Do I need to do anything differently if I also want everything to work for ipv6?. And then paste in all of the above.
 ```
+
+## 
 
 ## pi1 .. piN cluster servers
 

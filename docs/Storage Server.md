@@ -164,20 +164,6 @@ sudo chmod 777 /srv/os_images
 
 ## 
 
-## OLD Configure Connection to Lab Network
-
-On pi0, add a reserved IP for this server:
-
-```
-sudo nano /etc/dnsmasq.conf
-# Add line for data1 db server
-# data1
-dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
-
-# restart dnsmasq
-sudo systemctl restart dnsmasq
-```
-
 ## Disable Wifi Connection
 
 ## Wake-on-LAN
@@ -193,4 +179,18 @@ cat /var/lib/misc/dnsmasq.leases
 # Find the MAC address of data1
 sudo etherwake 1c:69:7a:a2:6f:89
 # Replace the above with you're data1 MAC address
+```
+
+## OLD Configure Connection to Lab Network
+
+On pi0, add a reserved IP for this server:
+
+```
+sudo nano /etc/dnsmasq.conf
+# Add line for data1 db server
+# data1
+dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
+
+# restart dnsmasq
+sudo systemctl restart dnsmasq
 ```

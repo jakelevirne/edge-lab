@@ -54,7 +54,8 @@ All of the configuration files below can be found in the [ansible](../ansible) d
 Now configure ansible to rely on your SSH configurations (setup above) for connecting to managed nodes. This way, if you can connect to the machines using `ssh` from your terminal, ansible should be able to connect as well. 
 
 ```bash
-nano edge-lab/ansible/ansible.cfg
+cd edge-lab/ansible
+nano ansible.cfg
 ```
 
 ```bash
@@ -65,6 +66,8 @@ ssh_args = -F /Users/jakelevirne/.ssh/config -o ControlMaster=auto -o ControlPer
 host_key_checking = False
 ```
 
+Setup your Ansible inventory. This will be the list of all hostnames that our scripts will need to interact with.
+
 ```bash
 nano hosts.ini
 ```
@@ -74,6 +77,78 @@ nano hosts.ini
 pi1
 pi2
 pi3
+
+[imager_hosts]
+imager1
+imager2
+imager3
+
+[router_hosts]
+pi0
+
+[router_imager_hosts]
+imager0
+
+[nfs_hosts]
+data1
+```
+
+### 
+
+### Playbooks for ERASING and reimaging pi0
+
+See [router_ERASE.yml](../ansible/router_ERASE.yml)
+
+Outcome: The boot partition of the USB drive in `pi0` will be reformatted, making it unbootable. The machine will reboot and fall back to the SD card, booting up as `imager0`
+
+Notes:
+
+- Make sure you really mean it. This will make your /dev/sda1 (USB) unbootable, which will cause the Pi to boot from SD card on restart.
+
+- The reboot is scheduled so it doesn't cause Ansible to fail. Normally Ansible will wait for a successful reconnection after a reboot. But in this case that would be problematic because the machine will come up with a new hostname, `imager0`, when it reboots.
+
+Run the playbook:
+
+```bash
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini router_ERASE.yml -vvv
+# It'll wait for you to press a key to continue
+```
+
+See [router_reimage.yml](../ansible/router_reimage.yml)
+
+Outcome: The clean Raspberry Pi OS image will be restored onto the USB, with all the customizations that were setup when using the Raspberry Pi Imager. The system will reboot and the hostname of the machine will be updated to `pi0`  (as opposed to `changeme`).
+
+Notes:
+
+- This will install and run Clonezilla completely unattended, copying the clean Raspberry Pi OS image we created to the USB, overwriting everything on that USB.
+
+- It assumes you've created the Clean Image, as described in the [Pi Cluster doc](<Pi Cluster.md>) and that this image is availble on the host `data1` and being shared on an NFS directory called `/srv/os_images`. 
+
+Run the playbook:
+
+```bash
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini router_reimage.yml -vvv
+# It'll wait for you to press a key to continue
+```
+
+### Playbook for configuring pi0 as a router
+
+See [router_config.yml](../ansible/router_config.yml)
+
+Outcome: `pi0` will be properly configured as the router for the home lab, acting as a DHCP server for assigning IP addresses to `pi1..pi3` ethernet interfaces, and routing internet traffic from the lab over to the home router.
+
+Notes:
+
+- I've chosen 192.168.87.0/24 as the subnet for my lab. Make edits to router_config.yml if you want to use a different subnet.
+- This playbook assigns reserved DHCP addresses to each Pi. These are based on the ethernet MAC addresses. You'll need to SSH in to each `imager` host and get these MAC addresses. These are built in to the hardware and so won't change no matter how often you re-install the OS. Run `ifconfig` and look for the hex string just after the word `ether`. Copy those MAC addresses into the task in the playbook titled "Ensure DHCP reservations are set in /etc/dnsmasq.conf"
+
+Run the playbook:
+
+```bash
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini router_config.yml -vvv
 ```
 
 ### Playbook for installing MicroK8s on pi1..piN
