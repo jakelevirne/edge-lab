@@ -30,11 +30,13 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 [^1]: [ChatGPT-What's a subnet? What does 192.168.86.0/24 mean? Is there something special about 192.168?](https://chat.openai.com/share/d146774e-6da8-48c8-8bc5-88791f5e4ad4)
 
-## A Note About Machine Names
+## A Note About Machine Names and IPs
 
-With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
+With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname.local`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
 
 Throughout these instructions and in the included scripts I use just `hostname` to refer to specific machines. This should generally work regardless of which approach you use for local hostname resolution. But if it's not working for you, switch to using IP addresses (static or DHCP reserved) or ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
+
+No matter what, I highly recommend you assign a fixed IP address to pi0's wifi on your Home LAN. My approach was to setup a DHCP reservation through my home router. You could do the same for the wifi MACs of pi1..pi3 and the NUC (data1) for any of the times when these happen to be connected (e.g. during re-imaging).
 
 ## Prepare Cluster
 
@@ -46,9 +48,9 @@ While there are several ways to change the [boot order](https://www.raspberrypi.
 
 Start the imager, select your device (Raspberry Pi 5), for Operating System choose `Misc utility images` → `Bootloader` → `USB Boot`. Choose Storage and select your SD card.
 
-With everything else disconnected, put this SD card into each Pi one by one, powering each one up in turn. Look for the green blinking light on the Pi to indicate the the bootloader flashed appropriately. (If you happen to have a monitor connected, you'll see the monitor show green).
+With everything else disconnected, put this SD card into each Pi one by one, powering each one up in turn. Look for the green blinking light on the Pi to indicate that the bootloader flashed appropriately. (If you happen to have a monitor connected, you'll see the monitor show green).
 
-This will set each Pi to prefer the USB device for booting. But the Pis will still boot from an SD card if the USB device is not present or bootable. We'll use this fact to allow us to change the boot disk when needed.
+This will set each Pi to prefer the USB device for booting. But the Pis will still boot from an SD card if the USB device is not present or is unbootable. We'll use this fact in the future to allow us to change the boot disk when needed.
 
 ### Create `imager` SD cards
 
@@ -88,7 +90,7 @@ Customize the OS by choosing `Edit Settings` and then select the following optio
   
   - Go back to the General tab and make sure 'Set username and password' is still unchecked
 
-SSH key setup is a complex topic in and of itself. If you don't already have and use SSH keys, then this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-create-ssh-keys-with-openssh-on-macos-or-linux) walks through the process of creating new ones. If you change any of the defaults during key generation (e.g. a different key filename or non-blank passphrase), you should edit/create your `~/.ssh/config` file to match. For example, mine looks like this because I have a custom identity filename, and I used a passphrase, and I'm on a Mac which let's me use the Keychain to store the passphrase:
+SSH key setup is a complex topic in and of itself. If you don't already have and use SSH keys, then this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-create-ssh-keys-with-openssh-on-macos-or-linux) walks through the process of creating new ones. If you change any of the defaults during key generation (e.g. a different key filename or non-blank passphrase), you should edit or create your `~/.ssh/config` file to match. For example, mine looks like this because I have a custom identity filename, and I used a passphrase, and I'm on a Mac which let's me use the Keychain to store the passphrase:
 
 ```bash
 Host *
@@ -121,66 +123,62 @@ On your laptop, use Raspberry Pi Imager, exactly as above with these changes:
 
 Do NOT boot this USB stick. It'll serve as the source for our Clonezilla clean image. Instead, boot up `imager0` using its SD card, and only after bootup has completed, insert this USB stick into `imager0`. Now we can use Clonezilla to backup the `changeme` Raspberry Pi OS image to NFS.
 
-## pi0 - router
+#### Backup the Clean Image to `data1`
 
-This Raspberry Pi will be used as the network router, bridging the Edge and Home subnets. It shouldn't need as much storage as the cluster nodes, so we'll use the 128 GB USB stick for it. Like all the Pis in the cluster, we use two storage device (SD card and USB) in order to create an imag
+SSH into `imager0` and ensure the clean USB is readable
 
-Use the Raspberry Pi imager to image pi0
-
-- Device: Raspberry Pi 5, OS: Raspberry Pi OS Lite (64-bit), Storage: SD card
-- Edit Settings
-  - Set hostname to pi0
-  - Uncheck username and password
-  - Configure wireless lan
-  - Set locale settings
-  - Under Services, enable SSH, allow public-key auth only, and paste in public key
-
-Before using it, enable USB boot even on 3A power:
-
-```
-nano /Volumes/bootfs/config.txt
+```bash
+lsblk
+ls /boot/firmware
 ```
 
-paste the following lines in to the existing file:
+Mount the shared `os_images` directory from `data1`
 
-```
-# allow usb boot even on 3a power
-usb_max_current_enable=1
-```
-
-Or better yet, after SSHing into pi0, change the EEPROM [bootloader config](https://forums.raspberrypi.com/viewtopic.php?t=359453) to always allow usb boot even on 3a power and to prefer USB [boot order](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#BOOT_ORDER):
-
-```
-sudo rpi-eeprom-config --edit
-# Edit it to look like this (USB preferred boot order and USB max current enabled):
-[all]
-BOOT_UART=1
-BOOT_ORDER=0xf146
-POWER_OFF_ON_HALT=0
-[config.txt]
-[all]
-usb_max_current_enable=1
+```bash
+showmount -e data1
+sudo mkdir -p /home/partimag
+sudo mount data1:/srv/os_images /home/partimag
 ```
 
+Install and run Clonezilla
+
+```bash
+sudo apt install clonezilla
+# you could run clonezilla interactively (sudo clonezilla)
+# or use this command to create a backup of sda (ensure this matches your USB)
+sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p noreboot savedisk pi-img sda
 ```
+
+Now you should have a backup image of your clean Raspberry Pi OS image that's never been booted, with all your customizations (e.g. hostname `changeme` and wifi settings) in place. We'll use this later for pi1..pi3. For now, let's setup pi0 as a router to bridge our Home and Lab networks.
+
+## Setup the Cluster
+
+### Setup pi0 as our Lab Router
+
+SSH in to `imager0` if you're not already and ensure the USB stick is still inserted. Now modify the configuration so that the hostname is properly set to `pi0` at initial boot.
+
+```bash
+sudo mkdir -p /mnt/sda1
+sudo mount /dev/sda1 /mnt/sda1 
+sudo nano /mnt/sda1/firstrun.sh
+# Find and replace (Ctrl-\) all instances of changeme with pi0
+
+```
+
+Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image.
+
+```bash
 sudo reboot
-# check the change by running:
-vcgencmd bootloader_config
 ```
 
-pi0 will be setup as the router, as follows:
+If all went well, this machine should now be running with the hostname `pi0` and be ready for us to SSH in. 
+
+You can continue from here, following these instructions manually. Or, better yet, now's a good time to get [Ansible](Ansile.md) setup on your laptop so you can automate this configuration.
 
 ```
 sudo apt update
 sudo apt upgrade
-# check locale and datetime
-locale
-# run if wrong:
-sudo dpkg-reconfigure locales
-# check timezone
-timedatectl
-# change timezone if wrong:
-sudo timedatectl set-timezone America/New_York
+
 # use NetworkManager, which is installed by default on Raspberry Pi OS
 nmcli device status
 # Configure the LAN interface assuming eth0 is your LAN interface.

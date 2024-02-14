@@ -14,6 +14,8 @@ Host *
   UseKeychain yes
   IdentityFile ~/.ssh/id_git
 
+Host data1
+  User pi
 
 Host pi0
   User pi
@@ -29,13 +31,30 @@ Host pi2
 Host pi3
   User pi
   ProxyJump pi0
+
+Host imager0
+  User pi
+
+Host imager1
+  User pi
+
+Host imager2
+  User pi
+
+Host imager3
+  User pi
 ```
 
-### Configure ansible
+### Install and Configure ansible
+
+Install Ansible on your control node (laptop) following these [instructions](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html). Or on a Mac, simple `brew install ansible`.
+
+All of the configuration files below can be found in the [ansible](../ansible) directory of this repository.
+
+Now configure ansible to rely on your SSH configurations (setup above) for connecting to managed nodes. This way, if you can connect to the machines using `ssh` from your terminal, ansible should be able to connect as well. 
 
 ```bash
-cd ~/dev/pi5cluster
-nano ansible.cfg
+nano edge-lab/ansible/ansible.cfg
 ```
 
 ```bash

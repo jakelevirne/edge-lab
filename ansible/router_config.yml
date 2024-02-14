@@ -1,0 +1,55 @@
+---
+- name: Configure router hosts
+  hosts: router_hosts
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Add LAN connection for eth0
+      command: nmcli con add type ethernet con-name lan ifname eth0
+
+    - name: Configure LAN connection with static IP
+      command: "{{ item }}"
+      loop:
+        - nmcli con modify lan ipv4.addresses '192.168.87.1/24'
+        - nmcli con modify lan ipv4.method manual
+
+    - name: Enable IP forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: Install iptables-persistent
+      apt:
+        name: iptables-persistent
+        state: present
+
+    - name: Set up NAT with iptables
+      block:
+        - name: Add MASQUERADE rule
+          iptables:
+            table: nat
+            chain: POSTROUTING
+            out_interface: wlan0
+            jump: MASQUERADE
+        - name: Save iptables rules
+          command: netfilter-persistent save
+
+    - name: Install dnsmasq
+      apt:
+        name: dnsmasq
+        state: present
+
+    - name: Configure dnsmasq
+      blockinfile:
+        path: /etc/dnsmasq.conf
+        block: |
+          interface=eth0
+          dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"

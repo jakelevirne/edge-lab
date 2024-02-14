@@ -1,6 +1,6 @@
 ---
 - name: Setup and clone disk using Clonezilla
-  hosts: imager_hosts
+  hosts: router_imager_hosts
   become: yes
   tasks:
     - name: Install Clonezilla
@@ -75,5 +75,3 @@
       ansible.builtin.command:
         cmd: shutdown -r +1
       ignore_errors: yes
-
-# TODO: DISABLE WIFI
