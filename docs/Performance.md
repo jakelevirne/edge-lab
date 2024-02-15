@@ -1,3 +1,7 @@
+## Benchmarking Tools
+
+[How to Benchmark a Raspberry Pi Using Vcgencmd | Tom's Hardware](https://www.tomshardware.com/how-to/raspberry-pi-benchmark-vcgencmd)
+
 ## Disk benchmarking
 
 ```

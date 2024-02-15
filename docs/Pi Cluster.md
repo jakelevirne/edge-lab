@@ -131,7 +131,7 @@ Establish a fixed IP on the lab subnet for `imager0`'s ethernet interface:
 
 ```bash
 nmcli con show
-sudo nmcli con mod "Wired connection 1" ipv4.addresses 192.168.87.1/24 ipv4.gateway 192.168.87.1 ipv4.method manual ipv4.dns "192.168.87.1"
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 192.168.87.1/24 ipv4.method manual
 sudo nmcli con down "Wired connection 1" && sudo nmcli con up "Wired connection 1"
 ping 192.168.87.2
 ```
@@ -139,9 +139,9 @@ ping 192.168.87.2
 Mount the shared `os_images` directory from `data1`
 
 ```bash
-showmount -e data1
+showmount -e 192.168.87.2
 sudo mkdir -p /home/partimag
-sudo mount data1:/srv/os_images /home/partimag
+sudo mount 192.168.87.2:/srv/os_images /home/partimag
 ```
 
 Install and run Clonezilla Backup
@@ -154,6 +154,15 @@ sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p noreboot savedisk pi-
 ```
 
 Now you should have a backup image of your clean Raspberry Pi OS image that's never been booted, with all your customizations (e.g. hostname `changeme` and wifi settings) in place. We'll use this later for pi1..pi3. For now, let's setup pi0 as a router to bridge our Home and Lab networks. DO NOT REBOOT YET. We have some configuration changes to make to the USB before first run.
+
+Since the backed up image is the exact same one we have on this USB, we can skip this next step. But in the future, if you do ever need to reimage `pi0` by restoring this image to USB, you can use these commands:
+
+```bash
+sudo mkdir -p /home/partimag && sudo mount data1:/srv/os_images /home/partimag
+sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch restoredisk pi-img sda
+```
+
+There's also an [Ansible](Ansible.md) script in this repository for reimaging `pi0` that automates the above approach.
 
 ## Setup the Cluster
 
@@ -204,7 +213,7 @@ sudo apt install dnsmasq
 sudo nano /etc/dnsmasq.conf
 # Add the following lines to the end of /etc/dnsmasq.conf
 interface=eth0
-dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
+dhcp-range=192.168.87.11,192.168.87.99,255.255.255.0,24h
 
 # Reserved IPs
 # In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
@@ -217,7 +226,8 @@ dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
 dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
 # pi3
 dhcp-host=d8:3a:dd:e9:d4:3e,192.168.87.103,pi3
-
+# data1
+dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
 
 # restart dnsmasq
 sudo systemctl restart dnsmasq
@@ -225,15 +235,20 @@ sudo systemctl restart dnsmasq
 sudo systemctl restart NetworkManager
 ```
 
-## 
-
 ## Setup pi1 .. piN as cluster servers
 
 Connect all of these pis to the same switch as pi0 and and ensure they're powered and booted using their SD cards (`imager1`..`imager3`). Once booted to their SD cards, attach a USB drive to each of them.
 
 These steps can be performed automatically using the provided [Ansible](Ansible.md) scripts. 
 
-SSH into `imager1` and ensure the USB is recognized (it should be `sda`). This will be the target for restoring our clean image.
+SSH into `imager1` and get it up to date
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+Now ensure the USB is recognized (it should be `sda`). This will be the target for restoring our clean image.
 
 ```bash
 lsblk
@@ -242,9 +257,9 @@ lsblk
 Mount the shared `os_images` directory from `data1`
 
 ```bash
-showmount -e data1
+showmount -e data1.local
 sudo mkdir -p /home/partimag
-sudo mount data1:/srv/os_images /home/partimag
+sudo mount data1.local:/srv/os_images /home/partimag
 ```
 
 Install and run Clonezilla Restore:
@@ -256,13 +271,13 @@ sudo apt install clonezilla
 sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch restoredisk pi-img sda
 ```
 
-Now modify the configuration so that the hostname is properly set to `pi0` at initial boot.
+Now modify the configuration so that the hostname is properly set to `pi1` at initial boot.
 
 ```bash
 sudo mkdir -p /mnt/sda1
 sudo mount /dev/sda1 /mnt/sda1 
 sudo nano /mnt/sda1/firstrun.sh
-# Find and replace (Ctrl-\) all instances of changeme with pi0
+# Find and replace (Ctrl-\) all instances of changeme with pi1
 ```
 
 ## DISABLE WIFI
@@ -285,18 +300,10 @@ If all went well, this machine should now be running with the hostname `pi1` and
 
 ```
 # from laptop, proxyjump through pi0 to pi1
-ssh -J pi@pi0 pi@pi1
+ssh -J pi@pi0.local pi@pi1.local
 ```
 
 Test as follows:
-
-```
-ssh pi@pi0
-# check the dhcp leases
-cat /var/lib/misc/dnsmasq.leases
-ping <ip-address-of-pi1>
-exit
-```
 
 ```
 # ping router from pi1
@@ -305,77 +312,33 @@ ping 192.168.87.1
 ping www.cnn.com
 ```
 
+```
+ssh pi@pi0.local
+# check the dhcp leases
+cat /var/lib/misc/dnsmasq.leases
+ping <ip-address-of-pi1>
+ping pi1.local
+exit
+```
+
+Update software on `pi1`
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
 ## Checking for boot errors
+
+On `pi1`
 
 ```bash
 journalctl -p err -b
 ```
 
-## Benchmarking
+Now you can repeat all of the above steps for `pi2` and `pi3` or you can use the [nodes_reimage.yml](../ansible/nodes_reimage.yml) Ansible script. 
 
-[How to Benchmark a Raspberry Pi Using Vcgencmd | Tom's Hardware](https://www.tomshardware.com/how-to/raspberry-pi-benchmark-vcgencmd)
-
-## NAS
-
-This is setup on my NUC (aka data1). Did as follows:
-
-Installed Ubuntu Server 22.04.3 LTS using balenaEtcher to create a bootable USB and going through the install. First time through failed, but after upgrading the installer (which is an optional step in the install process itself), things went smoothly.
-
-Through my home router, I gave data1 a reserved IP
-
-Then, I ran these commands:
-
-```
-sudo apt update
-sudo apt upgrade
-```
-
-Create, format, and permanently mount the new logical volume:
-
-```
-sudo lvcreate -n nfs-lv -L 1.5T ubuntu-vg
-sudo mkfs.ext4 /dev/ubuntu-vg/nfs-lv
-sudo mkdir /mnt/nfsnas
-sudo chmod 777 /mnt/nfsnas
-sudo mount /dev/ubuntu-vg/nfs-lv /mnt/nfsnas
-sudo nano /etc/fstab
-# Add this line to the end of the file
-/dev/ubuntu-vg/nfs-lv /mnt/nfsnas ext4 defaults 0 2
-```
-
-Install and configure the NFS server:
-
-```
-sudo apt install nfs-kernel-server
-sudo nano /etc/exports
-# Add this line to the file
-/mnt/nfsnas *(rw,sync,no_subtree_check)
-
-# start and enable the server
-sudo systemctl start nfs-kernel-server
-sudo systemctl enable nfs-kernel-server
-# Apply the export settings
-sudo exportfs -a
-```
-
-#### Permanently mount from one of the pis
-
-```
-sudo mkdir -p /mnt/nfsnas
-sudo nano /etc/fstab
-# Add this line
-192.168.86.5:/mnt/nfsnas /mnt/nfsnas nfs defaults 0 0
-
-
-sudo mount -a
-df -h
-```
-
-#### Note: mounting from Mac required the `resvport` option
-
-```
-sudo mount -t nfs -o resvport 192.168.86.5:/mnt/nfsnas ~/dev/nfsnas
-```
+#### 
 
 ## Proxmox
 
@@ -478,11 +441,17 @@ Tips:
 - OVMF UEFI
 - recommend configured virtio-scsi-pci (VirtIO SCSI)
 
+## 
+
+## 
+
 ## Setting Up Remote SSH with Cloudflare Tunnel
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
 
-## Powering Up Cluster
+## Remotely Powering Up the Cluster
+
+If you ever shutdown a node in the cluster (`sudo shutdown`) it'll leave the Pi in a state that can only be powered back on by pressing the power button. As of this writing, Pis don't support wake-on-LAN. So instead, you could use a smart plug, like the Kasa Smart Plug Mini. If you connect your lab's power strip to this smart plug, you can power it off and on remotely (which will start up the Pis). Before doing this, it's best to SSH in to all of the nodes and shutdown properly to avoid data loss. The [cluster_shutdown.yml](Ansible.md#playbook-for-installing-microk8s-on-pi1piN) Ansible playbook makes this easy.
 
 [Getting started &mdash; python-kasa documentation](https://python-kasa.readthedocs.io/en/stable/index.html)
 

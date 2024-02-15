@@ -59,7 +59,7 @@
         path: /etc/dnsmasq.conf
         block: |
           interface=eth0
-          dhcp-range=192.168.87.2,192.168.87.100,255.255.255.0,24h
+          dhcp-range=192.168.87.11,192.168.87.99,255.255.255.0,24h
         marker: "# {mark} ANSIBLE MANAGED BLOCK"
 
     - name: Ensure DHCP reservations are set in /etc/dnsmasq.conf
@@ -73,7 +73,7 @@
           # pi3
           dhcp-host=d8:3a:dd:e9:d4:3e,192.168.87.103,pi3
           #data1
-          dhcp-host=1c:69:7a:a2:6f:89,192.168.87.100,data1
+          dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
         marker: "# {mark} ANSIBLE MANAGED BLOCK FOR DHCP RESERVATIONS"
         backup: yes
 

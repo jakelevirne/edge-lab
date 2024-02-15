@@ -89,7 +89,7 @@ sudo update-grub;
 
 ## Configure Networking
 
-For its ethernet connection, we'll give `data1` a fixed IP address-- `192.168.87.2`. This way we can access it from `imager0` even before our Lab router is setup and configured. We'll also make all network adapters optional so Ubuntu doesn't wait for them on boot. Edit files like `/etc/netplan/00-installer-config.yaml` (and others in the `etc/netplan` directory) to have `optional: true` defined for any interfaces that are optional. And for the ethernet network interface (e.g. `eno1`), configure a static IP. Like this:
+For its ethernet connection, we'll give `data1` a fixed IP address-- `192.168.87.2`. This way we can access it from `imager0` even before our Lab router is setup and configured. We'll also make all network adapters optional so Ubuntu doesn't wait for them on boot. Edit files like `/etc/netplan/00-installer-config.yaml` (and others in the `etc/netplan` directory) to have `optional: true` defined for any interfaces that are optional. And for the ethernet network interface (e.g. `eno1`), configure a static IP (while still retaining DHCP). Like this:
 
 ```bash
 sudo nano /etc/netplan/00-installer-config.yaml
@@ -113,16 +113,12 @@ sudo nano /etc/netplan/00-installer-config-wifi.yaml
 ```bash
 network:
   version: 2
-  ethernets:
-    eno1:
-      dhcp4: false
-      addresses:
-        - 192.168.87.2/24
-      routes:
-        - to: default
-          via: 192.168.87.1
-      nameservers:
-        addresses: [192.168.87.1]
+  wifis:
+    wlp0s20f3:
+      access-points:
+        <your_SSID>:
+          password: <your_wifi_password>
+      dhcp4: true
       optional: true
 ```
 
@@ -162,6 +158,16 @@ sudo systemctl restart nfs-kernel-server
 sudo chmod 777 /srv/os_images
 ```
 
+#### Note: mounting from Mac required the `resvport` option
+
+While `data1` is still connected to the home network, it's possible to mount this NFS directly from your laptop. For Mac, the command requires the `resvport` options, like below.
+
+```
+sudo mount -t nfs -o resvport 192.168.86.202:/mnt/nfsnas ~/dev/nfsnas
+```
+
+Ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) if you need help mounting this share from a different laptop OS, like Windows or Linux.
+
 ## Disable Wifi Connection
 
 For a while, I left this machine's Wifi connection on as a crutch. But really given that we're trying to create a fully self contained cluster with only one machine (the `pi0` router) bridging to our home network, we should disable the Wifi interface on `data1`.
@@ -177,7 +183,7 @@ But as soon as you do this, you're SSH connection will die, so be sure you reall
 
 ### Wake-on-LAN
 
-It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. This NUC machine (data1) supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
+It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. The Intel NUC machine I use for data1 supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
 
 On pi0, which should have ethernet connectivity to data1:
 
@@ -189,3 +195,5 @@ cat /var/lib/misc/dnsmasq.leases
 sudo etherwake 1c:69:7a:a2:6f:89
 # Replace the above with you're data1 MAC address
 ```
+
+If you have a different machine, you'll need to read its manual to determine if it supports wake-on-LAN.
