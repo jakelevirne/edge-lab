@@ -38,7 +38,7 @@ Ideally in the future, imaging the storage server will be automated just like it
   - After security updates apply, Reboot Now 🙌
     - Don't worry if it says `Failed unmounting /cdrom`. Eventually it'll tell you to remove the USB and hit ENTER.
 
-After installation completes, you should be able to ssh in to the machine using its IP address (like `ssh pi@192.168.86.202`). If you want it to have a fixed IP address on your home network (remember this is just temporary anyway), ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) how to set up a fixed IP on the machine itself. Better yet you can do what I do and configure your home router to create a reserved IP address for this machine. 
+After installation completes, you should be able to ssh in to the machine using its IP address (like `ssh pi@192.168.86.202`). If you want it to have a fixed IP address on your home network (remember this is just temporary anyway), you can configure your home router to create a reserved IP address for this machine. 
 
 After logging in or SSHing in, running `lsblk` should show the following:
 
@@ -65,31 +65,9 @@ nvme0n1         259:0    0   1.8T  0 disk
 
 ## Initial Housekeeping
 
-### Simple (zeroconf) DNS
-
-Now we can setup Avahi for local mDNS/zeroconf name resolution, just like on the Pis.
-
-```bash
-sudo apt install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
-sudo systemctl status avahi-daemon
-# if needed:
-sudo systemctl start avahi-daemon
-sudo systemctl enable avahi-daemon
-```
-
-Now you can reboot and SSH back in using the machine name
-
-```bash
-sudo reboot
-```
-
-```bash
-ssh pi@data1 
-```
-
 ### Run OS Updates
 
-On data1, update all packages:
+On `data1`, update all packages:
 
 ```
 sudo apt update
@@ -111,11 +89,7 @@ sudo update-grub;
 
 ## Configure Networking
 
-We'll create a simple hostname we can use (`data1`) with avahi zeroconf. 
-
-###### Make Network Interfaces Optional (Speedup Boot)
-
-On data1, make all network adapters optional so Ubuntu doesn't wait for them on boot. Edit files like `/etc/netplan/00-installer-config.yaml` (and others in the `etc/netplan` directory) to have `optional: true` defined for any interfaces that are optional. Like this:
+For its ethernet connection, we'll give `data1` a fixed IP address-- `192.168.87.2`. This way we can access it from `imager0` even before our Lab router is setup and configured. We'll also make all network adapters optional so Ubuntu doesn't wait for them on boot. Edit files like `/etc/netplan/00-installer-config.yaml` (and others in the `etc/netplan` directory) to have `optional: true` defined for any interfaces that are optional. And for the ethernet network interface (e.g. `eno1`), configure a static IP. Like this:
 
 ```bash
 sudo nano /etc/netplan/00-installer-config.yaml
@@ -125,7 +99,9 @@ sudo nano /etc/netplan/00-installer-config.yaml
 network:
   ethernets:
     eno1:
-      dhcp4: true
+      dhcp4: false
+      addresses:
+        - 192.168.87.2/24
       optional: true
   version: 2
 ```
@@ -137,13 +113,37 @@ sudo nano /etc/netplan/00-installer-config-wifi.yaml
 ```bash
 network:
   version: 2
-  wifis:
-    wlp0s20f3:
-      access-points:
-        <your SSID>:
-          password: <your password>
-      dhcp4: true
+  ethernets:
+    eno1:
+      dhcp4: false
+      addresses:
+        - 192.168.87.2/24
+      routes:
+        - to: default
+          via: 192.168.87.1
+      nameservers:
+        addresses: [192.168.87.1]
       optional: true
+```
+
+Then apply the configuration changes.
+
+```bash
+sudo netplan apply
+```
+
+If you receive any warnings or errors, you can copy/paste them into the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
+
+### Simple (zeroconf) DNS
+
+Now we can setup Avahi for local mDNS/zeroconf name resolution, just like on the Pis. This way in the future we can connect to this machine as `data1.local`. 
+
+```bash
+sudo apt install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan
+sudo systemctl status avahi-daemon
+# if needed:
+sudo systemctl start avahi-daemon
+sudo systemctl enable avahi-daemon
 ```
 
 ## Create a share folder for OS images
@@ -162,11 +162,20 @@ sudo systemctl restart nfs-kernel-server
 sudo chmod 777 /srv/os_images
 ```
 
-## 
-
 ## Disable Wifi Connection
 
-## Wake-on-LAN
+For a while, I left this machine's Wifi connection on as a crutch. But really given that we're trying to create a fully self contained cluster with only one machine (the `pi0` router) bridging to our home network, we should disable the Wifi interface on `data1`.
+
+```bash
+sudo apt install rfkill
+sudo rfkill block wifi
+```
+
+But as soon as you do this, you're SSH connection will die, so be sure you really mean it. You can re-enable wifi with the command `sudo rfkill unblock wifi` but you'll need to do it with keyboard and monitor or by proxy jumping to `data` through `pi0` (or `imager0` if you're still at the initial setup stage).
+
+## Miscellaneous
+
+### Wake-on-LAN
 
 It's nice to be able to put our whole cluster in a closet somewhere but still be able to power it off and on remotely. This NUC machine (data1) supports wake-on-LAN, which means we can power it on from a fully shutdown state over the network.
 
@@ -179,18 +188,4 @@ cat /var/lib/misc/dnsmasq.leases
 # Find the MAC address of data1
 sudo etherwake 1c:69:7a:a2:6f:89
 # Replace the above with you're data1 MAC address
-```
-
-## OLD Configure Connection to Lab Network
-
-On pi0, add a reserved IP for this server:
-
-```
-sudo nano /etc/dnsmasq.conf
-# Add line for data1 db server
-# data1
-dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
-
-# restart dnsmasq
-sudo systemctl restart dnsmasq
 ```

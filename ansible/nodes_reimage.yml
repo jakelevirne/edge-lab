@@ -3,6 +3,11 @@
   hosts: imager_hosts
   become: yes
   tasks:
+    - name: Update and upgrade apt packages on imager
+      apt:
+        update_cache: yes
+        upgrade: yes
+
     - name: Install Clonezilla
       ansible.builtin.apt:
         name: clonezilla
@@ -21,7 +26,7 @@
     - name: Mount OS images directory
       ansible.builtin.mount:
         path: /home/partimag
-        src: data1:/srv/os_images
+        src: 192.168.87.2:/srv/os_images
         fstype: nfs
         state: mounted
         opts: defaults
@@ -63,6 +68,13 @@
         path: /mnt/sda1/firstrun.sh
         regexp: 'changeme'
         replace: "pi{{ (inventory_hostname.split('.') | first) | regex_search('(\\d+)$') }}"
+
+    - name: Disable WiFi by setting dtoverlay in config.txt
+      lineinfile:
+        path: /mnt/sda1/config.txt
+        line: dtoverlay=disable-wifi
+        create: no
+        state: present
 
     - name: Unmount /dev/sda1
       ansible.builtin.mount:

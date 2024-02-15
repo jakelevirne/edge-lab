@@ -30,13 +30,7 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 [^1]: [ChatGPT-What's a subnet? What does 192.168.86.0/24 mean? Is there something special about 192.168?](https://chat.openai.com/share/d146774e-6da8-48c8-8bc5-88791f5e4ad4)
 
-## A Note About Machine Names and IPs
-
-With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname.local`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
-
-Throughout these instructions and in the included scripts I use just `hostname` to refer to specific machines. This should generally work regardless of which approach you use for local hostname resolution. But if it's not working for you, switch to using IP addresses (static or DHCP reserved) or ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
-
-No matter what, I highly recommend you assign a fixed IP address to pi0's wifi on your Home LAN. My approach was to setup a DHCP reservation through my home router. You could do the same for the wifi MACs of pi1..pi3 and the NUC (data1) for any of the times when these happen to be connected (e.g. during re-imaging).
+## 
 
 ## Prepare Cluster
 
@@ -129,7 +123,17 @@ SSH into `imager0` and ensure the clean USB is readable
 
 ```bash
 lsblk
-ls /boot/firmware
+```
+
+In order to access `data1` as our NFS server, we need to be able to connect to it. If you've left it's wifi enabled, you could connect from `imager0` to `data1` via your home network (using either IP address or host name). These instructions will instead assume that `data1`'s wifi is disabled and we'll establish a connection to it over the lab network. At this point, all machines' ethernet ports should be connected to your lab network switch.
+
+Establish a fixed IP on the lab subnet for `imager0`'s ethernet interface:
+
+```bash
+nmcli con show
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 192.168.87.1/24 ipv4.gateway 192.168.87.1 ipv4.method manual ipv4.dns "192.168.87.1"
+sudo nmcli con down "Wired connection 1" && sudo nmcli con up "Wired connection 1"
+ping 192.168.87.2
 ```
 
 Mount the shared `os_images` directory from `data1`
@@ -140,7 +144,7 @@ sudo mkdir -p /home/partimag
 sudo mount data1:/srv/os_images /home/partimag
 ```
 
-Install and run Clonezilla
+Install and run Clonezilla Backup
 
 ```bash
 sudo apt install clonezilla
@@ -149,7 +153,7 @@ sudo apt install clonezilla
 sudo /usr/sbin/ocs-sr -q2 -c -j2 -z1p -i 0 -sfsck -senc -p noreboot savedisk pi-img sda
 ```
 
-Now you should have a backup image of your clean Raspberry Pi OS image that's never been booted, with all your customizations (e.g. hostname `changeme` and wifi settings) in place. We'll use this later for pi1..pi3. For now, let's setup pi0 as a router to bridge our Home and Lab networks.
+Now you should have a backup image of your clean Raspberry Pi OS image that's never been booted, with all your customizations (e.g. hostname `changeme` and wifi settings) in place. We'll use this later for pi1..pi3. For now, let's setup pi0 as a router to bridge our Home and Lab networks. DO NOT REBOOT YET. We have some configuration changes to make to the USB before first run.
 
 ## Setup the Cluster
 
@@ -164,6 +168,7 @@ sudo mkdir -p /mnt/sda1
 sudo mount /dev/sda1 /mnt/sda1 
 sudo nano /mnt/sda1/firstrun.sh
 # Find and replace (Ctrl-\) all instances of changeme with pi0
+sudo umount /dev/sda1
 ```
 
 Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image.
@@ -222,37 +227,65 @@ sudo systemctl restart NetworkManager
 
 ## 
 
-## pi1 .. piN cluster servers
+## Setup pi1 .. piN as cluster servers
 
-Use the Raspberry Pi imager to image pi1 through piN
+Connect all of these pis to the same switch as pi0 and and ensure they're powered and booted using their SD cards (`imager1`..`imager3`). Once booted to their SD cards, attach a USB drive to each of them.
 
-- Follow the same steps as above, but uncheck Configure wireless lan
+These steps can be performed automatically using the provided [Ansible](Ansible.md) scripts. 
 
-Connect this pi to the same switch as pi0 and power up
+SSH into `imager1` and ensure the USB is recognized (it should be `sda`). This will be the target for restoring our clean image.
 
+```bash
+lsblk
 ```
-# from laptop, proxyjump to pi1
-ssh -J pi@pi0 pi@pi1
-sudo apt update
-sudo apt upgrade
-# check locale and datetime
-locale
-# run if wrong:
-sudo dpkg-reconfigure locales
-# check timezone
-timedatectl
-# change timezone if wrong:
-sudo timedatectl set-timezone America/New_York
+
+Mount the shared `os_images` directory from `data1`
+
+```bash
+showmount -e data1
+sudo mkdir -p /home/partimag
+sudo mount data1:/srv/os_images /home/partimag
 ```
+
+Install and run Clonezilla Restore:
+
+```bash
+sudo apt install clonezilla
+# you could run clonezilla interactively (sudo clonezilla)
+# or use this command to create a backup of sda (ensure this matches your USB)
+sudo /usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -c -k0 -p noreboot -batch restoredisk pi-img sda
+```
+
+Now modify the configuration so that the hostname is properly set to `pi0` at initial boot.
+
+```bash
+sudo mkdir -p /mnt/sda1
+sudo mount /dev/sda1 /mnt/sda1 
+sudo nano /mnt/sda1/firstrun.sh
+# Find and replace (Ctrl-\) all instances of changeme with pi0
+```
+
+## DISABLE WIFI
 
 Disable Wifi
 
 ```
-sudo nano /boot/firmware/config.txt
+sudo nano /mnt/sda1/config.txt
 # paste the following line
 dtoverlay=disable-wifi
-# Save, then reboot
+```
+
+Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image.
+
+```bash
 sudo reboot
+```
+
+If all went well, this machine should now be running with the hostname `pi1` and be ready for us to SSH in. Because it's no longer on the Home network (Wifi is disabled) we need to SSH into it via `pi0`.
+
+```
+# from laptop, proxyjump through pi0 to pi1
+ssh -J pi@pi0 pi@pi1
 ```
 
 Test as follows:
@@ -462,3 +495,11 @@ kasa --host <ip address> <command>
 ## Notes
 
 Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh
+
+### A Note About Machine Names and IPs
+
+With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname.local`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
+
+Throughout these instructions and in the included scripts I use just `hostname` to refer to specific machines. This should generally work regardless of which approach you use for local hostname resolution. But if it's not working for you, switch to using IP addresses (static or DHCP reserved) or ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
+
+No matter what, I highly recommend you assign a fixed IP address to pi0's wifi on your Home LAN. My approach was to setup a DHCP reservation through my home router. You could do the same for the wifi MACs of pi1..pi3 and the NUC (data1) for any of the times when these happen to be connected (e.g. during re-imaging).

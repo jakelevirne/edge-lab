@@ -20,15 +20,15 @@ Host data1
 Host pi0
   User pi
 
-Host pi1
+Host pi1.local
   User pi
   ProxyJump pi0
 
-Host pi2
+Host pi2.local
   User pi
   ProxyJump pi0
 
-Host pi3
+Host pi3.local
   User pi
   ProxyJump pi0
 
