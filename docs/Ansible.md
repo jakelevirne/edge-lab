@@ -251,3 +251,7 @@ To run playbooks that require a secret:
 ```bash
 ansible-playbook -i hosts.ini --ask-vault-pass reboot_cluster.yml
 ```
+
+### Playbook for shutting down the cluster
+
+See [cluster_shutdown.yml](../ansible/cluster_shutdown.yml)

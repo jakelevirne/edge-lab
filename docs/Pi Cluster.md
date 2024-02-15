@@ -451,7 +451,7 @@ Tips:
 
 ## Remotely Powering Up the Cluster
 
-If you ever shutdown a node in the cluster (`sudo shutdown`) it'll leave the Pi in a state that can only be powered back on by pressing the power button. As of this writing, Pis don't support wake-on-LAN. So instead, you could use a smart plug, like the Kasa Smart Plug Mini. If you connect your lab's power strip to this smart plug, you can power it off and on remotely (which will start up the Pis). Before doing this, it's best to SSH in to all of the nodes and shutdown properly to avoid data loss. The [cluster_shutdown.yml](Ansible.md#playbook-for-installing-microk8s-on-pi1piN) Ansible playbook makes this easy.
+If you ever shutdown a node in the cluster (`sudo shutdown`) it'll leave the Pi in a state that can only be powered back on by pressing the power button. As of this writing, Pis don't support wake-on-LAN. So instead, you could use a smart plug, like the Kasa Smart Plug Mini. If you connect your lab's power strip to this smart plug, you can power it off and on remotely (which will start up the Pis). Before doing this, it's best to SSH in to all of the nodes and shutdown properly to avoid data loss. The [cluster_shutdown.yml](Ansible.md#playbook-for-shutting-down-the-cluster) Ansible playbook makes this easy.
 
 [Getting started &mdash; python-kasa documentation](https://python-kasa.readthedocs.io/en/stable/index.html)
 
