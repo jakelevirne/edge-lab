@@ -1,0 +1,9 @@
+---
+- name: Configure the cluster nodes
+  hosts: pi_hosts
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: yes

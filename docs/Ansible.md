@@ -124,7 +124,7 @@ Notes:
 
 - This will install and run Clonezilla completely unattended, copying the clean Raspberry Pi OS image we created to the USB, overwriting everything on that USB.
 
-- It assumes you've created the Clean Image, as described in the [Pi Cluster doc](<Pi Cluster.md>) and that this image is availble on the host `data1` and being shared on an NFS directory called `/srv/os_images`. 
+- It assumes you've created the Clean Image, as described in the [Pi Cluster doc](<Pi Cluster.md>) and that this image is available on the host `data1` and being shared on an NFS directory called `/srv/os_images`. 
 
 Run the playbook:
 
@@ -178,17 +178,17 @@ ansible-playbook -i hosts.ini nodes_ERASE.yml -vvv
 
 See [nodes_reimage.yml](../ansible/nodes_reimage.yml)
 
-Outcome: The clean Raspberry Pi OS image will be restored onto the USBs, with all the customizations that were setup when using the Raspberry Pi Imager. The system will reboot and the hostname of the machine will be updated to `pi1`..`piN` (as opposed to `changeme`).
+Outcome: The clean Raspberry Pi OS image will be restored onto the USBs, with all the customizations that were setup when initially using the Raspberry Pi Imager. The system will reboot and the hostnames of the machines will be updated to `pi1`..`piN` (as opposed to `changeme`).
 
 Notes:
 
 - This script will only reimage machines that are currently booted into their SD cards as `imager1`..`imagerN`. It won't touch `pi0`/`imager0` and it won't touch any machines that are already booted up from their USB as `pi1`..`piN`
 
-- `pi0` must be configured and running as the lab network router.
+- `pi0` must be configured and running as the lab network router for this script to work, and your `~/.ssh/config` must be setup correctly (see above).
 
 - This will install and run Clonezilla completely unattended, copying the clean Raspberry Pi OS image we created to the USB, overwriting everything on that USB.
 
-- It assumes you've created the Clean Image, as described in the [Pi Cluster doc](Pi%20Cluster.md) and that this image is availble on the host `data1` and being shared on an NFS directory called `/srv/os_images`.
+- It assumes you've created the Clean Image, as described in the [Pi Cluster doc](Pi%20Cluster.md) and that this image is available on the host `data1` and being shared on an NFS directory called `/srv/os_images`.
 
 Run the playbook:
 
@@ -197,6 +197,25 @@ Run the playbook:
 ansible-playbook -i hosts.ini nodes_reimage.yml -vvv
 # It'll wait for you to press a key to continue
 ```
+
+### Playbook for configuring pi1..piN
+
+See [nodes_config.yml](../ansible/nodes_config.yml)
+
+Outcome: `pi1`..`piN` will be properly configured and ready for software installs (e.g. microk8s). This script simply updates all software already on the Pis (`sudo apt update && sudo apt upgrade)
+
+Notes:
+
+- 
+
+Run the playbook:
+
+```bash
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini nodes_config.yml -vvv
+```
+
+
 
 ### Playbook for installing MicroK8s on pi1..piN
 
@@ -255,3 +274,17 @@ ansible-playbook -i hosts.ini --ask-vault-pass reboot_cluster.yml
 ### Playbook for shutting down the cluster
 
 See [cluster_shutdown.yml](../ansible/cluster_shutdown.yml)
+
+Outcome: The entire cluster will be shutdown gracefully, starting with the cluster nodes (`pi1`..`piN`), then the storage server (`data1`), and finally the router (`pi0`).
+
+Notes:
+
+- 
+
+Run the playbook:
+
+```bash
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini cluster_shutdown.yml -vvv
+# It'll wait for you to press a key to continue
+```

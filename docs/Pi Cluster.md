@@ -180,7 +180,7 @@ sudo nano /mnt/sda1/firstrun.sh
 sudo umount /dev/sda1
 ```
 
-Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image.
+Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image. Just before this boot is also a good time to give `pi0` a reserved IP address on your home network. You can find your `pi0` MAC address by running `ifconfig` and looking for the hex string just after the word `ether` under your wireless (`wlan0`) device. Most home routers have a page to set DHCP IP reservations by MAC address.
 
 ```bash
 sudo reboot
@@ -290,6 +290,12 @@ sudo nano /mnt/sda1/config.txt
 dtoverlay=disable-wifi
 ```
 
+Unmount sda1
+
+```bash
+sudo umount /dev/sda1
+```
+
 Now, we can reboot and this machine should ignore the SD card and instead boot into the clean USB image.
 
 ```bash
@@ -306,13 +312,14 @@ ssh -J pi@pi0.local pi@pi1.local
 Test as follows:
 
 ```
-# ping router from pi1
+# ping router (pi0) from pi1
 ping 192.168.87.1
 # ping external site from pi1
 ping www.cnn.com
 ```
 
 ```
+# ping pi1 from the router (pi0)
 ssh pi@pi0.local
 # check the dhcp leases
 cat /var/lib/misc/dnsmasq.leases
@@ -336,118 +343,81 @@ On `pi1`
 journalctl -p err -b
 ```
 
-Now you can repeat all of the above steps for `pi2` and `pi3` or you can use the [nodes_reimage.yml](../ansible/nodes_reimage.yml) Ansible script. 
-
-#### 
-
-## Proxmox
-
-[GitHub - jiangcuo/Proxmox-Port: Proxmox VE arm64 riscv64 loongarch64](https://github.com/jiangcuo/Proxmox-Port)
-
-```
-sudo mkdir -p ~/mnt/mmcblk0p1
-sudo mount /dev/mmcblk0p1 ~/mnt/mmcblk0p1
-
-# in config.txt:
-kernel=kernel8.img
-```
-
-```
-# in cmdline.txt, add to the end of the line:
-cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
-```
-
-Modify `/etc/hosts` like:
-
-```
-127.0.0.1    localhost
-::1        localhost ip6-localhost ip6-loopback
-ff02::1        ip6-allnodes
-ff02::2        ip6-allrouters
-
-192.168.86.200    pi0
-```
-
-REBOOT
-
-Test
-
-```
-hostname --ip-address
-```
-
-Should return your IP address
-
-Set your root password (this is what proxmox uses for it's initial admin user)
-
-```
-sudo su
-passwd
-```
-
-Continue following steps from [Install Proxmox VE on Debian bookworm · jiangcuo/Proxmox-Port Wiki · GitHub](https://github.com/jiangcuo/Proxmox-Port/wiki/Install-Proxmox-VE-on-Debian-bookworm), using `sudo`, like this:
-
-```
-sudo sh -c 'echo "deb [arch=arm64] https://mirrors.apqa.cn/proxmox/debian/pve bookworm port" > /etc/apt/sources.list.d/pveport.list'
-
-sudo curl https://mirrors.apqa.cn/proxmox/debian/pveport.gpg -o /etc/apt/trusted.gpg.d/pveport.gpg
-
-sudo apt update && sudo apt full-upgrade
-
-sudo apt install ifupdown2
-
-sudo apt install proxmox-ve postfix open-iscsi
-
-# Disable NetworkManager
-sudo systemctl stop NetworkManager
-sudo systemctl disable NetworkManager
-
-sudo nano /etc/network/interfaces
-```
-
-Make it look like this ([Network Configuration - Proxmox VE](https://pve.proxmox.com/wiki/Network_Configuration)):
-
-```
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet manual
-
-auto vmbr0
-iface vmbr0 inet static
-    address 192.168.87.101/24
-    gateway 192.168.87.1
-    bridge-ports eth0
-    bridge-stp off
-    bridge-fd 0
-```
-
-REBOOT
-
-Configure port 8006 forwarding from pi0 to pi1 for proxmox admin UI
-
-```
-sudo iptables -t nat -A PREROUTING -p tcp --dport 8006 -j DNAT --to-destination 192.168.87.101:8006
-sudo iptables -A FORWARD -p tcp -d 192.168.87.101 --dport 8006 -j ACCEPT
-sudo netfilter-persistent save
-```
-
-### Running a VM
-
-[Qemu VM · jiangcuo/Proxmox-Arm64 Wiki · GitHub](https://github.com/jiangcuo/Proxmox-Arm64/wiki/Qemu-VM)  
-Tips:
-
-- OVMF UEFI
-- recommend configured virtio-scsi-pci (VirtIO SCSI)
+Now you can repeat all of the above steps for `pi2` and `pi3` or you can use the [nodes_reimage.yml](Ansibl.md#playbook-for-reimaging-pi1piN) Ansible script. 
 
 ## 
 
-## 
+## Securing your cluster
+
+There are a number of things we can and should do to improve the security of our cluster and also the security of our home network.
+
+### Ensure SSH is set to require key-based authentication
+
+If you followed the instructions in this tutorial when creating your Pi images and when installing Ubuntu on `data1`, this should already be the case. But you can always check.
+
+On every machine in the cluster, run these commands to inspect.
+
+```bash
+sudo sshd -T | grep passwordauthentication
+sudo sshd -T | grep pubkeyauthentication
+```
+
+`passwordauthentication` should be `no` and `pubkeyauthentication` should be `yes`
+
+If that's not the case, edit `/etc/ssh/sshd_config` to set these correctly:
+
+```bash
+sudo nano /etc/ssh/sshd_config
+# Ensure these lines
+PubkeyAuthentication yes # Or not defined-- the default is yes
+PasswordAuthentication no
+
+
+# Then restart the SSH daemon
+sudo systemctl restart ssh
+```
+
+Once you make these changes, you'll only be able to SSH in to this machine using key based authentication. See [SSH Tips](<SSH Tips.md>) to get key based auth working before disabling password auth.
+
+### Ensure the pi user has a password
+
+On each machine in the cluster.
+
+```bash
+sudo passwd pi
+```
+
+
+
+### Disable the root user
+
+
+
+### Use Ansible vault
+
+
+
+### Update sudoers configuration
+
+
+
+### Setup a firewall to protect the home network
+
+
+
+### Setup unattended operating system updates
+
+
+
+### Regular monitoring and auditing
+
+
 
 ## Setting Up Remote SSH with Cloudflare Tunnel
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
+
+
 
 ## Remotely Powering Up the Cluster
 
@@ -464,11 +434,3 @@ kasa --host <ip address> <command>
 ## Notes
 
 Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh
-
-### A Note About Machine Names and IPs
-
-With local networking, machine naming can happen in several different ways: through your router, through a `hosts` file, through a local DNS server, or through Avahi zeroconf which is configured by default in Raspberry Pi OS. With Avahi, all machines should automatically be accessible at `hostname.local`. However, I've had some conflicts when using Pi or Nuc wifi and my home router (Google Nest Wifi) since the router itself resolves these machines to `hostname.lan`.
-
-Throughout these instructions and in the included scripts I use just `hostname` to refer to specific machines. This should generally work regardless of which approach you use for local hostname resolution. But if it's not working for you, switch to using IP addresses (static or DHCP reserved) or ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) for help.
-
-No matter what, I highly recommend you assign a fixed IP address to pi0's wifi on your Home LAN. My approach was to setup a DHCP reservation through my home router. You could do the same for the wifi MACs of pi1..pi3 and the NUC (data1) for any of the times when these happen to be connected (e.g. during re-imaging).
