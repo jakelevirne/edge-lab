@@ -417,6 +417,7 @@ sudo passwd pi
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
 
+https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/
 
 
 ## Remotely Powering Up the Cluster
