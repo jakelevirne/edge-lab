@@ -411,6 +411,7 @@ sudo passwd pi
 
 ### Regular monitoring and auditing
 
+### Use a passphrase on your private key
 
 
 ## Setting Up Remote SSH with Cloudflare Tunnel
