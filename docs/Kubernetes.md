@@ -20,7 +20,7 @@ microk8s enable hostpath-storage
 
 ```bash
 # Setup the Metal Load Balancer
-microk8s enable 
+# TODO 
 ```
 
 ### Setup client access to the K8s cluster

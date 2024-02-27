@@ -94,7 +94,7 @@ imager0.local
 data1.local
 ```
 
-### 
+TODO: Instructions for setting up ansible vault; also update all the playbooks to use the vault (vars_files)
 
 ### Playbooks for ERASING and reimaging pi0
 

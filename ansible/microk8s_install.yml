@@ -1,7 +1,21 @@
 ---
+- name: Ensure Vault password is provided
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check for vault access
+      ansible.builtin.debug:
+        msg: "Checking vault access (e.g. --ask-vault-pass)"
+      vars:
+        vault_test: "{{ lookup('ansible.builtin.file', 'secrets.yml') }}"
+      failed_when: vault_test is undefined
+
+
 - name: Install Snap, MicroK8s, and kernel modules on Debian-based machines
   hosts: pi_hosts
   become: yes
+  vars_files:
+    - secrets.yml  
   tasks:
     # https://microk8s.io/docs/install-raspberry-pi
     - name: Check if the specific string is already present
