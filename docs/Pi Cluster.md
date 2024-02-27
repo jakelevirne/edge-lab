@@ -409,9 +409,15 @@ If there's any output that looks like `(ALL) NOPASSWD: ALL` you'll need to updat
 
 ### Regular monitoring and auditing
 
+### Use a passphrase on your private key
+
+
 ## Setting Up Remote SSH with Cloudflare Tunnel
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
+
+https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/
+
 
 ## Remotely Powering Up the Cluster
 

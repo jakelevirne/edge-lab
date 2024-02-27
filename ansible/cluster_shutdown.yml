@@ -13,6 +13,8 @@
 - name: Shutdwon pi_hosts
   hosts: pi_hosts
   become: yes
+  vars_files:
+    - secrets.yml
   strategy: free
   tasks:
     - name: Shutting down pi hosts
@@ -32,6 +34,8 @@
 - name: Shutting down router host last
   hosts: router_hosts
   become: yes
+  vars_files:
+    - secrets.yml
   tasks:
     - name: Shutting down router host
       ansible.builtin.command: shutdown -h +1
