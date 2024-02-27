@@ -349,7 +349,7 @@ Now you can repeat all of the above steps for `pi2` and `pi3` or you can use the
 
 ## Securing your cluster
 
-There are a number of things we can and should do to improve the security of our cluster and also the security of our home network.
+There are a number of things we can and should do to improve the security of our cluster and also the security of our home network. These should all be done for `imager0`..`imager3` as well.
 
 ### Ensure SSH is set to require key-based authentication
 
@@ -387,37 +387,31 @@ On each machine in the cluster.
 sudo passwd pi
 ```
 
-
-
-### Disable the root user
-
-
-
-### Use Ansible vault
-
-
+Manage these passwords carefully, for example in a password manager.
 
 ### Update sudoers configuration
 
+On each machine in the cluster, ensure that the NOPASSWD directive is NOT defined
 
+```bash
+sudo -l
+```
+
+If there's any output that looks like `(ALL) NOPASSWD: ALL` you'll need to update your sudoers configuration.
+
+### Disable the root user
+
+### Use Ansible vault
 
 ### Setup a firewall to protect the home network
 
-
-
 ### Setup unattended operating system updates
 
-
-
 ### Regular monitoring and auditing
-
-
 
 ## Setting Up Remote SSH with Cloudflare Tunnel
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
-
-
 
 ## Remotely Powering Up the Cluster
 
@@ -433,4 +427,93 @@ kasa --host <ip address> <command>
 
 ## Notes
 
-Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh
+Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh.
+
+### Switching to USB-Ethernet to connect to home network
+
+If we want to switch to using Ethernet for connecting to the home network for improved performance, we can do so with a USB ethernet adapter, like this [TP-Link UE306](https://www.amazon.com/dp/B09GRL3VCN).
+
+To keep everything else working the same, change your home network DHCP reservation for eth0 to instead point to the MAC address of the new ethernet adapter. Then you should be able to turn off the wifi on pi0 like this:
+
+```bash
+sudo rfkill block wifi
+```
+
+Then, update the routing to use the new adapter. Assuming it's named `eth1`, then like this:
+
+```bash
+# Remove the old NAT rule (assuming wlan0 was the only one)
+sudo iptables -t nat -D POSTROUTING -o wlan0 -j MASQUERADE
+
+# Add a new NAT rule for eth1
+sudo iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+
+# Save the updated iptables rules
+sudo netfilter-persistent save
+```
+
+### Setting up pi0 as a wifi access point for lab network
+
+Setting up `wlan0` as a WiFi access point on pi0 will let us connect wifi devices like ESP32 boards directly to the edge-lab network.
+
+### 
+
+Remove the existing wireless and eth0 connections:
+
+```bash
+nmcli con show
+sudo nmcli con delete lan
+sudo nmcli con delete preconfigured
+```
+
+
+
+Add a bridge between eth0, the ethernet interface plugged into the edge-lab switch and wlan0, the wifi interface on the Pi. Setup the wifi interface as an access point
+
+```bash
+sudo nmcli connection add con-name 'bridge-con' ifname br0 type bridge ipv4.method auto ipv6.method disabled connection.autoconnect yes stp no
+sudo nmcli con modify "bridge-con" ipv4.addresses 192.168.87.1/24 ipv4.method manual
+sudo nmcli connection add con-name 'lab-eth-con' ifname eth0 type bridge-slave master 'bridge-con' connection.autoconnect yes
+sudo nmcli connection add con-name 'lab-hotspot' ifname wlan0 type wifi slave-type bridge master 'bridge-con' wifi.band a wifi.channel 153 wifi.mode ap wifi.ssid <yourlabssid> wifi-sec.key-mgmt wpa-psk wifi-sec.psk <yourpassword>
+sudo systemctl restart NetworkManager
+
+
+```
+
+
+
+Configure `dnsmasq` to provide DHCP services over `br0` instead of `eth0` or `wlan0` directly. Adjust `/etc/dnsmasq.conf` to offer IP addresses for devices connecting through the bridge:
+
+```bash
+sudo nano /etc/dnsmasq.conf
+```
+
+
+
+`dnsmasq.conf`:
+
+```bash
+interface=br0
+dhcp-range=192.168.87.11,192.168.87.99,255.255.255.0,24h
+```
+
+```bash
+sudo systemctl restart dnsmasq
+```
+
+
+
+Since we plan to share an internet connection through the bridge, we need to ensure IP forwarding is enabled (as described in previous steps).
+
+- We did this already with `echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf` previously
+
+And ensure NAT rules are setup and using eth1 for internet traffic as noted previously:
+
+```bash
+# ensure you changed your NAT rule to use eth1 instead of wlan0
+sudo iptables -t nat -D POSTROUTING -o wlan0 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+sudo netfilter-persistent save
+```
+
+Finally, verify your setup by connecting a device to your newly created WiFi network. Check that the device receives an IP address within the `192.168.87.0/24` range and has internet access.

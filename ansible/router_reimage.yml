@@ -1,4 +1,15 @@
 ---
+- name: Ensure Vault password is provided
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check for vault access
+      ansible.builtin.debug:
+        msg: "Checking vault access (e.g. --ask-vault-pass)"
+      vars:
+        vault_test: "{{ lookup('ansible.builtin.file', 'secrets.yml') }}"
+      failed_when: vault_test is undefined
+
 - name: Setup and clone disk using Clonezilla
   hosts: router_imager_hosts
   become: yes

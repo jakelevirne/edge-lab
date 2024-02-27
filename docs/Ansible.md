@@ -206,16 +206,12 @@ Outcome: `pi1`..`piN` will be properly configured and ready for software install
 
 Notes:
 
-- 
-
-Run the playbook:
+- Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
 ansible-playbook -i hosts.ini nodes_config.yml -vvv
 ```
-
-
 
 ### Playbook for installing MicroK8s on pi1..piN
 
@@ -271,6 +267,8 @@ To run playbooks that require a secret:
 ansible-playbook -i hosts.ini --ask-vault-pass reboot_cluster.yml
 ```
 
+### 
+
 ### Playbook for shutting down the cluster
 
 See [cluster_shutdown.yml](../ansible/cluster_shutdown.yml)
@@ -279,7 +277,7 @@ Outcome: The entire cluster will be shutdown gracefully, starting with the clust
 
 Notes:
 
-- 
+- This playbook makes use of the Ansible vault because it needs the sudo password for `data1` 
 
 Run the playbook:
 
