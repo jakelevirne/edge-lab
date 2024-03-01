@@ -3,8 +3,6 @@
 - Use network boot instead of SD cards for machine re-imaging
 - Ensure IPv6 is all fully configured
 
-
-
 ## Proxmox
 
 [GitHub - jiangcuo/Proxmox-Port: Proxmox VE arm64 riscv64 loongarch64](https://github.com/jiangcuo/Proxmox-Port)

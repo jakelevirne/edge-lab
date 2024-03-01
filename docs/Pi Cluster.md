@@ -411,13 +411,11 @@ If there's any output that looks like `(ALL) NOPASSWD: ALL` you'll need to updat
 
 ### Use a passphrase on your private key
 
-
 ## Setting Up Remote SSH with Cloudflare Tunnel
 
 [SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
 
 https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/
-
 
 ## Remotely Powering Up the Cluster
 
@@ -472,8 +470,6 @@ sudo nmcli con delete lan
 sudo nmcli con delete preconfigured
 ```
 
-
-
 Add a bridge between eth0, the ethernet interface plugged into the edge-lab switch and wlan0, the wifi interface on the Pi. Setup the wifi interface as an access point
 
 ```bash
@@ -482,19 +478,13 @@ sudo nmcli con modify "bridge-con" ipv4.addresses 192.168.87.1/24 ipv4.method ma
 sudo nmcli connection add con-name 'lab-eth-con' ifname eth0 type bridge-slave master 'bridge-con' connection.autoconnect yes
 sudo nmcli connection add con-name 'lab-hotspot' ifname wlan0 type wifi slave-type bridge master 'bridge-con' wifi.band a wifi.channel 153 wifi.mode ap wifi.ssid <yourlabssid> wifi-sec.key-mgmt wpa-psk wifi-sec.psk <yourpassword>
 sudo systemctl restart NetworkManager
-
-
 ```
-
-
 
 Configure `dnsmasq` to provide DHCP services over `br0` instead of `eth0` or `wlan0` directly. Adjust `/etc/dnsmasq.conf` to offer IP addresses for devices connecting through the bridge:
 
 ```bash
 sudo nano /etc/dnsmasq.conf
 ```
-
-
 
 `dnsmasq.conf`:
 
@@ -506,8 +496,6 @@ dhcp-range=192.168.87.11,192.168.87.99,255.255.255.0,24h
 ```bash
 sudo systemctl restart dnsmasq
 ```
-
-
 
 Since we plan to share an internet connection through the bridge, we need to ensure IP forwarding is enabled (as described in previous steps).
 

@@ -55,6 +55,10 @@ const redpandaCluster = new k8s.apiextensions.CustomResource("redpanda-cluster",
     spec: {
         chartRef: {},
         clusterSpec: {
+            monitoring: {
+                enabled: true,
+                scrapeInterval: "30s",
+            },
             external: {
                 domain: "customredpandadomain.local",
             },

@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redpanda
+  namespace: redpanda
+  labels:
+    app.kubernetes.io/name: redpanda
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redpanda
+  namespaceSelector:
+    matchNames:
+    - redpanda
+  endpoints:
+  - port: https
+    interval: 30s
+

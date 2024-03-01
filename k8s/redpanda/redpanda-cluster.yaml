@@ -1,15 +1,18 @@
 apiVersion: cluster.redpanda.com/v1alpha1
 kind: Redpanda
 metadata:
- name: redpanda
+  name: redpanda
 spec:
- chartRef: {}
- clusterSpec:
-   external:
-     domain: customredpandadomain.local
-   statefulset:
-     initContainers:
-       setDataDirOwnership:
-         enabled: true
+  chartRef: {}
+  clusterSpec:
+    monitoring:
+      enabled: true
+      scrapeInterval: 30s
+    external:
+      domain: customredpandadomain.local
+    statefulset:
+      initContainers:
+        setDataDirOwnership:
+          enabled: true
 
 

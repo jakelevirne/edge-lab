@@ -1,0 +1,14 @@
+prometheus:
+  prometheusSpec:
+    serviceAccountName: prometheus
+    serviceMonitorSelector:
+      matchLabels:
+        app.kubernetes.io/name: redpanda
+    serviceMonitorNamespaceSelector:
+      matchLabels:
+        name: redpanda
+    resources:
+      requests:
+        memory: 400Mi
+    enableAdminAPI: false
+

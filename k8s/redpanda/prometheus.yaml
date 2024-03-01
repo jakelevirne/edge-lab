@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+spec:
+  serviceAccountName: prometheus
+  serviceMonitorNamespaceSelector:
+    matchLabels:
+      name: redpanda
+  serviceMonitorSelector:
+    matchLabels:
+      app.kubernetes.io/name: redpanda
+  resources:
+    requests:
+      memory: 400Mi
+  enableAdminAPI: false
+

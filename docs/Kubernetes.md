@@ -315,3 +315,17 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
 brew install pulumi
 pulumi -version
 ```
+
+### Prometheus
+
+[Getting Started - Prometheus Operator](https://prometheus-operator.dev/docs/user-guides/getting-started/)
+
+
+
+### Curl / Troubleshoot
+
+[How to run curl in Kubernetes (for troubleshooting) - Tutorial Works](https://www.tutorialworks.com/kubernetes-curl/)
+
+```bash
+kubectl run mycurlpod --image=curlimages/curl -i --tty -- sh
+```
