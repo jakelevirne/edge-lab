@@ -320,8 +320,6 @@ pulumi -version
 
 [Getting Started - Prometheus Operator](https://prometheus-operator.dev/docs/user-guides/getting-started/)
 
-
-
 ### Curl / Troubleshoot
 
 [How to run curl in Kubernetes (for troubleshooting) - Tutorial Works](https://www.tutorialworks.com/kubernetes-curl/)

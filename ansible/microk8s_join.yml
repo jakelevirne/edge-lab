@@ -59,3 +59,5 @@
         msg: "Rebooting after MicroK8s configuration"
         reboot_timeout: 600  # Adjust this timeout as needed
       when: microk8s_join_command is defined
+
+# TODO: enable storage in microk8s
