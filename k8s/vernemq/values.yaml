@@ -1,0 +1,21 @@
+replicaCount: 3
+podAntiAffinity: hard
+additionalEnv:
+  - name: DOCKER_VERNEMQ_ACCEPT_EULA
+    value: "yes"
+  - name: DOCKER_VERNEMQ_ALLOW_ANONYMOUS
+    value: "on"
+
+env:
+  - name: DOCKER_VERNEMQ_DISCOVERY_KUBERNETES
+    value: "1"
+  - name: MY_POD_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+  - name: DOCKER_VERNEMQ_KUBERNETES_LABEL_SELECTOR
+    value: "app=vernemq,release=myinstance"
+  - name: DOCKER_VERNEMQ_LOG__CONSOLE
+    value: "console"
+  - name: DOCKER_VERNEMQ_LOG__CONSOLE__LEVEL
+    value: "debug"

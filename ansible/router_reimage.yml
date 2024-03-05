@@ -44,12 +44,6 @@
         fstype: auto
         state: unmounted
 
-    - name: Unmount /dev/sda2
-      ansible.builtin.mount:
-        path: /mnt/dev/sda2
-        src: /dev/sda2
-        fstype: auto
-        state: unmounted
 
     - name: Run ocs-sr with auto-confirmation via yes
       ansible.builtin.shell:
