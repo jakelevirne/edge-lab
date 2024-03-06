@@ -50,6 +50,7 @@ Use helm
 
 ```bash
 kubectl apply -f 00-namespace.yaml
+helm repo add vernemq https://vernemq.github.io/docker-vernemq
 helm install my-vernemq vernemq/vernemq -f values.yaml -n vernemq
 ```
 
@@ -104,7 +105,7 @@ kubectl exec --namespace vernemq my-vernemq-1 -- /vernemq/bin/vmq-admin set allo
 
 (`--all` shows/sets all cluster nodes)
 
-Test [file-based auth](https://docs.vernemq.com/configuring-vernemq/file-auth) like this:
+Test [file-based auth](https://docs.vernemq.com/configuring-vernemq/file-auth) like this (note that this needs to be done on each pod):
 
 ```bash
 kubectl exec --namespace vernemq -it my-vernemq-0 -- /bin/bash
@@ -123,7 +124,19 @@ mosquitto_sub -h localhost -t your_topic -i my-client-id1 -u henry -P <password>
 mosquitto_pub -h localhost -t your_topic -m "foooodeyloodey" -i my-client-id2 -u henry -P 1234
 ```
 
+### Netdata monitoring in K8s
 
+With the following, netdata will monitor each of your K8s nodes, including auto-discovery and monitoring of VerneMQ, even across namespaces:
+
+```bash
+kubectl apply -f 00-namespace.yaml
+helm repo add netdata https://netdata.github.io/helmchart/
+helm install netdata netdata/netdata -n netdata
+```
+
+Follow the instructions after installation to identify the IP and port of your netdata dashboards. I found them at: `http://<pi-machine-IP>:19999`
+
+Each node has its own dashboard but hopefully we can find a way to combine them.
 
 
 
