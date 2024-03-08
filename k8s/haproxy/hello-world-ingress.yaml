@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-world-ingress
+  namespace: haproxy-controller
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer" 
+spec:
+  ingressClassName: haproxy
+  tls:
+  - hosts:
+      - test.edge-lab.dev
+    secretName: test-edge-lab-dev-tls
+  rules:
+  - host: test.edge-lab.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-world-service
+            port:
+              number: 80

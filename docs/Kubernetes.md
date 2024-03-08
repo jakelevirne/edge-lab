@@ -309,6 +309,235 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
     internal-rpk topic consume twitch-chat --num 1
     ```
 
+## # Getting Ingress Working
+
+## MetalLB
+
+This will be used simply to provide an external IP to the HAProxy Kubernetes Ingress service
+
+```bash
+helm repo add metallb https://metallb.github.io/metallb
+helm repo update
+helm install metallb metallb/metallb --create-namespace \
+--namespace metallb-system
+```
+
+`metallb-ip-pool.yaml`:
+
+```yaml
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.87.250-192.168.87.255
+```
+
+```bash
+kubectl apply -f metallb-ip-pool.yaml
+```
+
+`metallb-l2adv.yaml`:
+
+```yaml
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default-l2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - default-pool
+```
+
+## HAProxy
+
+HA Proxy will do TLS termination, routing, and load balancing
+
+```bash
+helm repo add haproxytech https://haproxytech.github.io/helm-charts
+helm repo update
+helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
+  --create-namespace \
+  --namespace haproxy-controller \
+  --set controller.ingressClass=null
+```
+
+### Set HAProxy to be of type LoadBalancer
+
+`values.yaml`:
+
+```yaml
+controller:
+  service:
+    type: LoadBalancer
+```
+
+```bash
+haproxy % helm upgrade haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
+  --create-namespace \
+  --namespace haproxy-controller \
+  --set controller.ingressClass=null \
+  -f values.yaml
+```
+
+## CertManager
+
+CertManager handles automatic provisioning of LetsEncrypt certs
+
+```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install cert-manager jetstack/cert-manager \
+  --set installCRDs=true \
+  --namespace cert-manager  \
+  --create-namespace
+kubectl create secret generic cloudflare-api-token-secret --from-literal=api-token='YOUR_CLOUDFLARE_API_TOKEN' -n cert-manager
+```
+
+Setup a ClusterIssuer. `letsencrypt-clusterissuer.yaml`:
+
+```yaml
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-issuer
+spec:
+  acme:
+    # server: https://acme-staging-v02.api.letsencrypt.org/directory  # Staging URL
+    server: https://acme-v02.api.letsencrypt.org/directory # Production URL
+    email: youremail@example.com
+    privateKeySecretRef:
+      name: letsencrypt-private-key
+    solvers:
+    - dns01:
+        cloudflare:
+          email: youremail@example.com
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
+```
+
+```bash
+kubectl apply -f letsencrypt-clusterissuer.yaml
+```
+
+The above assumes you're using Cloudflare for your nameservers. If you're not, you'll need to setup a different solver by following [certmanager documentation](https://cert-manager.io/docs/configuration/acme/dns01/)
+
+### Test it out with a simple HelloWorld service
+
+`hello-deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+  namespace: haproxy-controller
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: nginxdemos/hello
+        ports:
+        - containerPort: 80
+```
+
+```bash
+kubectl apply -f hello-deployment.yaml
+```
+
+(At this point you can access the hello-world web app by first port forwarding from one of your pods and then hitting localhost. But port forwarding is temporary.)
+
+`hello-service.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world-service
+  namespace: haproxy-controller
+spec:
+  type: ClusterIP
+  selector:
+    app: hello-world
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+```bash
+kubectl apply -f hello-service.yaml
+```
+
+(At this point you can access the hello-world web app by first port forwarding from your Service and then hitting localhost. But port forwarding is temporary.)
+
+Setup an Ingress for this service that uses the letsencrypt-issuer. `hello-world-ingress.yaml`:
+
+```yaml
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-world-ingress
+  namespace: haproxy-controller
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer" 
+spec:
+  ingressClassName: haproxy
+  tls:
+  - hosts:
+      - test.example.com
+    secretName: test-edge-lab-dev-tls
+  rules:
+  - host: test.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-world-service
+            port:
+              number: 80
+```
+
+```bash
+kubectl apply -f hello-world-ingress.yaml
+```
+
+In the above, replace test.example.com with your domain. This will automatically create a new CertificateRequest, which should result in a new Certificate if everything was configured correctly. It may take a few minutes, but you should see a successful CertificateRequest, Certificate, and Secret all setup in your cluster.
+
+To test, you'll likely need to setup your haproxy-kubernetes-ingress external IP in your `/etc/hosts` file by adding a line that looks like this:
+
+```
+192.168.87.250  test.edge-lab.dev
+```
+
+Now you can use curl to retrieve the page:
+
+```bash
+curl https://test.example.com
+```
+
+This should return the html from the hello-world-service. You should also be able to access this from your browser.
+
+But even after all this, your service won't be accessible from a machine that isn't on your edge-lab subnet (or explicitly routing to your subnet as configured above).
+
 ## Pulumi
 
 ```bash

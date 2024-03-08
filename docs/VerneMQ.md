@@ -137,7 +137,3 @@ helm install netdata netdata/netdata -n netdata
 Follow the instructions after installation to identify the IP and port of your netdata dashboards. I found them at: `http://<pi-machine-IP>:19999`
 
 Each node has its own dashboard but hopefully we can find a way to combine them.
-
-
-
-
