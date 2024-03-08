@@ -438,7 +438,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hello-world
-  namespace: haproxy-controller
 spec:
   replicas: 3
   selector:
@@ -469,7 +468,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hello-world-service
-  namespace: haproxy-controller
 spec:
   type: ClusterIP
   selector:
@@ -494,7 +492,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hello-world-ingress
-  namespace: haproxy-controller
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-issuer" 
 spec:
