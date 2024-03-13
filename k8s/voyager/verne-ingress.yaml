@@ -1,0 +1,19 @@
+apiVersion: voyager.appscode.com/v1
+kind: Ingress
+metadata:
+  name: verne-ingress
+  namespace: vernemq
+  annotations:
+    ingress.appscode.com/keep-source-ip: "true"
+
+spec:
+  rules:
+  - host: test.edge-lab.dev
+    tcp:
+      port: 1883
+      backend:
+        service:
+          name: my-vernemq
+          port:
+            number: 1883
+        loadBalanceOn: source

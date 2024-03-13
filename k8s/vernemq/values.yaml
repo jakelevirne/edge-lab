@@ -19,3 +19,9 @@ env:
     value: "console"
   - name: DOCKER_VERNEMQ_LOG__CONSOLE__LEVEL
     value: "debug"
+
+#service:
+#  mqtts:
+#    enabled: true
+#  sessionAffinity: ClientIP
+#  type: LoadBalancer

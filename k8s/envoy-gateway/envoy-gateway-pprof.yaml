@@ -1,0 +1,11 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+gateway:
+    controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
+kind: EnvoyGateway
+provider:
+    type: "Kubernetes"
+admin:
+  enablePprof: true
+  address:
+    host: 127.0.0.1
+    port: 19000

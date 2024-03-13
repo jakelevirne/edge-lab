@@ -1,0 +1,21 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: vernemq-backend-traffic-policy
+  namespace: vernemq
+spec:
+# targetRef:
+#    group: gateway.networking.k8s.io
+#    kind: Gateway
+#    name: vernemq-gateway
+#    namespace: vernemq
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: TCPRoute
+    name: vernemq-route
+    namespace: vernemq
+  loadBalancer:
+    type: ConsistentHash
+    consistentHash:
+      type: SourceIP
+

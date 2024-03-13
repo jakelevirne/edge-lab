@@ -1,0 +1,14 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: vernemq-gateway
+  namespace: vernemq
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+  - name: vernemq-listener
+    protocol: TCP
+    port: 1883
+    allowedRoutes:
+      kinds:
+      - kind: TCPRoute

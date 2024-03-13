@@ -2,3 +2,4 @@
 .DS_Store
 **/*secret*
 **/*kubeconfig*
+**/voyager-license*
