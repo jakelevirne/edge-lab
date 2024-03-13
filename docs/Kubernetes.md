@@ -599,13 +599,6 @@ spec:
 
 But I've found out that load balancing by source IP hash is not yet implemented in Envoy Gateway. [Adding BTP support for TCPRoute · Issue #2880 · envoyproxy/gateway · GitHub](https://github.com/envoyproxy/gateway/issues/2880)
 
-## Pulumi
-
-```bash
-brew install pulumi
-pulumi -version
-```
-
 ### Prometheus
 
 [Getting Started - Prometheus Operator](https://prometheus-operator.dev/docs/user-guides/getting-started/)

@@ -4,7 +4,7 @@ The edge lab is a work in progress.
 
 ## A dev environment focused on edge computing
 
-This repo contains instructions and scripts for creating a cluster of Raspberry Pis running Kubernetes that can be re-imaged at any time through a set of Ansible and Pulumi scripts. The cluster is used to run an MQTT broker, Kafka for stream processing, a ClickHouse database for querying/analyzing the event stream data, NFS for basic file sharing, a router to separate the whole cluster into its own subnet, and various workloads for capturing and transforming event data.
+This repo contains instructions and scripts for creating a cluster of Raspberry Pis running Kubernetes that can be re-imaged at any time through a set of Ansible scripts. The cluster is used to run an MQTT broker (VerneMQ), Fluvio for stream processing, a DuckDB database for querying/analyzing the event stream data, NFS for basic file sharing, a router to separate the whole cluster into its own subnet, and various workloads for capturing and transforming event data.
 
 The motivation behind this lab is to explore and learn the tools for handling real-time streaming data, especially in the context of a mesage-based edge/IoT architecture.
 
