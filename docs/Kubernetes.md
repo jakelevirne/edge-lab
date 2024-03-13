@@ -309,7 +309,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
     internal-rpk topic consume twitch-chat --num 1
     ```
 
-## # Getting Ingress Working
+# Getting Ingress Working
 
 ## MetalLB
 
@@ -534,6 +534,68 @@ curl https://test.example.com
 This should return the html from the hello-world-service. You should also be able to access this from your browser.
 
 But even after all this, your service won't be accessible from a machine that isn't on your edge-lab subnet (or explicitly routing to your subnet as configured above).
+
+## Envoy Gateway Instead
+
+Configuring TCP routing and source (IP) hash load balancing with HAProxy doesn't seem straightforward or aligned yet with the new K8s Gateway API specification. Instead, let's try out Envoy Gateway.
+
+[TCP Routing | Envoy Gateway](https://gateway.envoyproxy.io/v0.6.0/user/tcp-routing/)
+
+Installation of the latest release:
+
+```bash
+helm install eg oci://docker.io/envoyproxy/gateway-helm --version v0.0.0-latest -n envoy-gateway-system --create-namespace
+```
+
+`gateway-class.yaml`:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+```
+
+`vernemq-gateway.yaml`:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: vernemq-gateway
+  namespace: vernemq
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+  - name: vernemq-listener
+    protocol: TCP
+    port: 1883
+    allowedRoutes:
+      kinds:
+      - kind: TCPRoute
+```
+
+`vernemq-tcproute.yaml`:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: vernemq-route
+  namespace: vernemq
+spec:
+  parentRefs:
+  - name: vernemq-gateway
+    namespace: vernemq
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: my-vernemq
+      port: 1883
+```
 
 ## Pulumi
 
