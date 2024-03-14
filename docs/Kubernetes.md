@@ -105,7 +105,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
    kubectl auth can-i create CustomResourceDefinition --all-namespaces
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    You should see `yes` in the output.
    
@@ -119,7 +119,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
    helm install cert-manager jetstack/cert-manager --set installCRDs=true --namespace cert-manager --create-namespace
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    TLS is enabled by default. The Redpanda Helm chart uses cert-manager to manage TLS certificates by default.
 
@@ -130,7 +130,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
       | kubectl apply -f -
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 4. Deploy the Redpanda Operator:
    
@@ -141,7 +141,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
     --create-namespace
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    If you already have Flux installed and you want it to continue managing resources across the entire cluster, use the `--set enableHelmControllers=false` flag. This flag prevents the Redpanda Operator from deploying its own set of Helm controllers that may conflict with those installed with Flux.
 
@@ -151,7 +151,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
    kubectl rollout status --watch deployment/redpanda-controller-operator
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    deployment "redpanda-controller-operator" successfully rolled out
 
@@ -175,13 +175,13 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
             enabled: true
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    ```bash
    kubectl apply -f redpanda-cluster.yaml
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 7. Wait for the Redpanda Operator to deploy Redpanda using the Helm chart:
    
@@ -189,7 +189,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
    kubectl get redpanda --watch
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    NAME       READY   STATUS
    redpanda   True    Redpanda reconciliation succeeded
@@ -200,7 +200,7 @@ In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Co
    kubectl get pod
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    If it’s taking too long, see [Troubleshoot](https://docs.redpanda.com/current/deploy/deployment-option/self-hosted/kubernetes/local-guide/#troubleshoot).
 
@@ -214,7 +214,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    alias internal-rpk="kubectl exec -i -t redpanda-0 -c redpanda -- rpk"
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 2. Create a topic called `twitch-chat`:
    
@@ -243,7 +243,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
           key: "ca.crt"
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 4. Apply the Topic resource in the same namespace as your Redpanda cluster:
    
@@ -251,7 +251,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    kubectl apply -f topic.yaml
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 5. Check the logs of the Redpanda Operator to confirm that the topic was created:
    
@@ -259,13 +259,13 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    kubectl logs -l app.kubernetes.io/name=operator -c manager
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    You should see that the Redpanda Operator reconciled the Topic resource.
    
    Example output
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 6. Describe the topic:
    
@@ -273,7 +273,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    internal-rpk topic describe twitch-chat
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    Expected output:
 
@@ -283,7 +283,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    internal-rpk topic produce twitch-chat
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 8. Type a message, then press Enter:
    
@@ -291,7 +291,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    Pandas are fabulous!
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
    
    Example output:
    
@@ -299,7 +299,7 @@ Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to an
    Produced to partition 0 at offset 0 with timestamp 1663282629789.
    ```
    
-   ![copy icon](https://docs.redpanda.com/_/img/octicons-16.svg#view-clippy)
+   
 
 9. Press Ctrl+C to finish producing messages to the topic.
 
