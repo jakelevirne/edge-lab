@@ -112,7 +112,7 @@ Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
-ansible-playbook -i hosts.ini router_ERASE.yml -vvv
+ansible-playbook -i hosts.ini --ask-vault-pass router_ERASE.yml -vvv
 # It'll wait for you to press a key to continue
 ```
 
@@ -130,7 +130,7 @@ Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
-ansible-playbook -i hosts.ini router_reimage.yml -vvv
+ansible-playbook -i hosts.ini --ask-vault-pass router_reimage.yml -vvv
 # It'll wait for you to press a key to continue
 ```
 
@@ -143,13 +143,13 @@ Outcome: `pi0` will be properly configured as the router for the home lab, actin
 Notes:
 
 - I've chosen 192.168.87.0/24 as the subnet for my lab. Make edits to router_config.yml if you want to use a different subnet.
-- This playbook assigns reserved DHCP addresses to each Pi. These are based on the ethernet MAC addresses. You'll need to SSH in to each `imager` host and get these MAC addresses. These are built in to the hardware and so won't change no matter how often you re-install the OS. Run `ifconfig` and look for the hex string just after the word `ether`. Copy those MAC addresses into the task in the playbook titled "Ensure DHCP reservations are set in /etc/dnsmasq.conf"
+- This playbook assigns reserved DHCP addresses to each Pi. These are based on the ethernet MAC addresses of your Raspberry Pis so **must be edited**. You'll need to SSH in to each `imager` host and get these MAC addresses. These are built in to the hardware and so won't change no matter how often you re-install the OS. Run `ifconfig` and look for the hex string just after the word `ether`. Copy those MAC addresses into the task in the playbook titled "Ensure DHCP reservations are set in /etc/dnsmasq.conf"
 
 Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
-ansible-playbook -i hosts.ini router_config.yml -vvv
+ansible-playbook -i hosts.ini --ask-vault-pass router_config.yml -vvv
 ```
 
 ### Playbook for ERASING pi1..piN
@@ -170,7 +170,7 @@ Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
-ansible-playbook -i hosts.ini nodes_ERASE.yml -vvv
+ansible-playbook -i hosts.ini --ask-vault-pass nodes_ERASE.yml -vvv
 # It'll wait for you to press a key to continue
 ```
 
@@ -194,7 +194,7 @@ Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
-ansible-playbook -i hosts.ini nodes_reimage.yml -vvv
+ansible-playbook -i hosts.ini --ask-vault-pass nodes_reimage.yml -vvv
 # It'll wait for you to press a key to continue
 ```
 
@@ -206,68 +206,61 @@ Outcome: `pi1`..`piN` will be properly configured and ready for software install
 
 Notes:
 
-- Run the playbook:
+- 
+
+Run the playbook:
 
 ```bash
 # Using -vvv for verbose output
-ansible-playbook -i hosts.ini nodes_config.yml -vvv
+ansible-playbook -i hosts.ini --ask-vault-pass nodes_config.yml -vvv
 ```
+
+
 
 ### Playbook for installing MicroK8s on pi1..piN
 
-```bash
-nano install_microk8s.yml
-```
+See [microK8s_install.yml](../ansible/microK8s_install.yml)
 
-```yaml
----
-- name: Install Snap and MicroK8s on Debian-based machines
-  hosts: pi_hosts
-  become: yes
-  tasks:
-    - name: Update apt cache
-      ansible.builtin.apt:
-        update_cache: yes
-        cache_valid_time: 3600
+Outcome: Each node in the cluster except the router (pi0) will have MicroK8s installed and running. Hostpath-storage will be enabled on pi1, which will enable it for the entire cluster once nodes join pi1 in the future. After this script is run, the MicroK8s nodes will not yet be joined together in a single cluster.
 
-    - name: Install Snap
-      ansible.builtin.apt:
-        name: snapd
-        state: present
+Notes:
 
-    - name: Enable and start Snap services
-      ansible.builtin.systemd:
-        name: snapd.socket
-        state: started
-        enabled: yes
-      notify: Restart Snap services
+- This will install MicroK8s separately on each node. They won't yet form a K8s cluster.
+- The script will cause a reboot.
 
-    - name: Install MicroK8s
-      ansible.builtin.snap:
-        name: microk8s
-        classic: true
-        state: present
-
-  handlers:
-    - name: Restart Snap services
-      ansible.builtin.systemd:
-        name: snapd.service
-        state: restarted
-```
-
-To run this playbook:
+Run the playbook:
 
 ```bash
-ansible-playbook -i hosts.ini install_microk8s.yml
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini --ask-vault-pass microK8s_install.yml -vvv
+# It'll wait for you to press a key to continue
 ```
 
-To run playbooks that require a secret:
+ 
+
+### Playbook for Joining Nodes to the MicroK8s Cluster
+
+See [microK8s_join.yml](../ansible/microK8s_join.yml)
+
+Outcome: Ensure all nodes are joined together into a single K8s cluster
+
+Notes:
+
+- This script doesn't install MicroK8s; it expects that it's already running on all the nodes.
+- This script runs different tasks (add-node) on pi1 than on the other machines (join-node). Pi1 acts as the primary node, 
+- The script will cause a reboot.
+
+Run the playbook:
 
 ```bash
-ansible-playbook -i hosts.ini --ask-vault-pass reboot_cluster.yml
+# Using -vvv for verbose output
+ansible-playbook -i hosts.ini --ask-vault-pass microK8s_join.yml -vvv
+# It'll wait for you to press a key to continue
 ```
 
-### 
+
+
+
 
 ### Playbook for shutting down the cluster
 

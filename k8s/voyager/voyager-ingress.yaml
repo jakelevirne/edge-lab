@@ -1,0 +1,22 @@
+---
+apiVersion: voyager.appscode.com/v1
+kind: Ingress
+metadata:
+  name: default-ingress
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer" 
+spec:
+  tls:
+  - hosts:
+      - test.edge-lab.dev
+    secretName: test-edge-lab-dev-tls
+  rules:
+  - host: test.edge-lab.dev
+    http:
+      paths:
+      - backend:
+          service:
+            name: hello-world-service
+            port:
+              number: 80

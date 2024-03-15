@@ -2,36 +2,127 @@
 
 [Kubernetes 101: Deploy Your First Application with MicroK8s - The New Stack](https://thenewstack.io/kubernetes-101-deploy-your-first-application-with-microk8s/)
 
-[Getting started with Redpanda in Kubernetes](https://redpanda.com/blog/manage-clusters-k8s-streaming-data)
-
 [Tools To Make Your Terminal DevOps and Kubernetes Friendly](https://www.linkedin.com/pulse/tools-make-your-terminal-devops-kubernetes-friendly-maryam-tavakkoli/)
 
-### Enable MicroK8s add-ons
 
-On one of the cluster nodes:
+
+
+
+### Install MicroK8s on all Nodes
+
+First, follow the [Raspberry Pi specific instructions](https://microk8s.io/docs/install-raspberry-pi) in the MicroK8s installation docs:
+
+```bash
+sudo nano /boot/firmware/cmdline.txt
+```
+
+And adding the following to the end of the command line:
+
+```bash
+cgroup_enable=memory cgroup_memory=1
+```
+
+For Raspberry Pi OS, there was no need to follow the Ubuntu-specific instruction to install `linux-modules-extra-raspi`.
+
+
+
+From here, you can proceed with the main [Getting Started](https://microk8s.io/docs/getting-started) instructions in the MicroK8s documentaion.
+
+```bash
+snap install microk8s --classic
+sudo usermod -a -G microk8s $USER
+sudo mkdir -p ~/.kube
+sudo chown -f -R $USER ~/.kube
+
+# You will also need to re-enter the session for the group update to take place:
+
+su - $USER
+```
+
+Specify an explicit channel in the snap install above (e.g. `--channel=1.29`) if you want a specific version of K8s such as the latest.
+
+Wait for K8s to become available.
+
+```bash
+microk8s status --wait-ready
+```
+
+Check that it's working:
+
+```bash
+microk8s kubectl get nodes
+```
+
+Repeat the above on the other Raspberry Pis.
+
+
+
+### Enable the MicroK8s Storage add-on
+
+On one of the cluster nodes, run the following:
 
 ```bash
 # Need to create a storage class
-# 'storage' is deprecated and will soon be removed. Please use 'hostpath-storage' instead
-# microk8s enable storage
 microk8s enable hostpath-storage
-#TODO: Add this to ansible
 ```
 
+This will ensure that simple persistent volumes can be created using the disks that are attached to each node of the cluster. Our MQTT broker (VerneMQ) should not need any form of shared storage between the nodes since it handles all of its own [inter-node communication](https://docs.vernemq.com/vernemq-clustering/communication). We should, however, switch from hostpath-storage to [Local Persistent Volumes](https://kubernetes.io/blog/2019/04/04/kubernetes-1.14-local-persistent-volumes-ga/). Per the K8s documentation:
+
+> With HostPath volumes, a pod referencing a HostPath volume may be moved by the scheduler to a different node resulting in data loss. But with Local Persistent Volumes, the Kubernetes scheduler ensures that a pod using a Local Persistent Volume is always scheduled to the same node.
+
+
+
+There's also an [Ansible](Ansible.md) script in this repository for installing MicroK8s that automates the above two sections.
+
+
+
+### Join all Nodes to a Single Cluster
+
+At this point, each Node is independently running a separate K8s instance. For redundancy we want to create a cluster of nodes in K8s. MicroK8s makes this simple. We'll follow the instructions in the [clustering documentation](https://microk8s.io/docs/clustering).
+
+On pi1, run the following:
+
 ```bash
-# Setup the Metal Load Balancer
-# TODO 
+microk8s add-node
 ```
+
+This will return some joining instructions which should be executed **on the MicroK8s instance that you wish to join to the cluster (NOT THE NODE YOU RAN `add-node` FROM)**, similar to this:
+
+```bash
+From the node you wish to join to this cluster, run the following:
+microk8s join 192.168.1.230:25000/92b2db237428470dc4fcfc4ebbd9dc81/2c0cb3284b05
+```
+
+Follow these instructions on the other nodes in the cluster. Once you've done this successfully, you should be able to run this command from any of the cluster machines:
+
+```bash
+microk8s kubectl get nodes
+```
+
+And you should see output like the following:
+
+```bash
+NAME   STATUS   ROLES    AGE   VERSION
+pi2    Ready    <none>   25h   v1.28.7
+pi3    Ready    <none>   25h   v1.28.7
+pi1    Ready    <none>   29h   v1.28.7
+```
+
+
+
+There's also an [Ansible](Ansible.md) script in this repository that will join together the nodes for you by running the above commands.
+
+
 
 ### Setup client access to the K8s cluster
 
-MacOS
+#### MacOS Routing
 
 ```bash
 brew install kubectl
 ```
 
-If the cluster is on a different subnet than you're client, ensure proper routing (first IP is the cluster subnet, second IP is the address of the router that connects the subnets):
+If the cluster is on a different subnet than your client, ensure proper routing from your laptop. On a Mac, you can run the following command (first IP is the cluster subnet, second IP is the address of the router that connects the subnets.. in our case the home network IP address of pi0):
 
 ```bash
 sudo route -n add -net 192.168.87.0/24 192.168.86.X >/dev/null 2>&1
@@ -58,262 +149,65 @@ Close and reopen your terminal, or `source ~/.zshrc` and you should now be able 
 
 Note that with this approach, if you reboot your machine and try to use your browser (or any other tool) to access the cluster subnet before opening a terminal it won't work because the route won't be set yet.
 
-Get the kubeconfig from the cluster by running the following on a cluster machine:
+#### Routing for Other Client Operating Systems
+
+For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant) about your specific situation. For example: `I'm running an Ubuntu Linux laptop and need a route from my laptop to a different subnet. The subnet is 192.168.87.0/24 and my laptop can access it via the gateway at 192.168.86.200. I also need to make the route permanent.`
+
+
+
+#### Downloading kube config
+
+Get the kubeconfig from the cluster by running the following on any cluster machine:
 
 ```bash
-microk8s kubectl config view --minify --flatten  > kubeconfig.yaml
+microk8s kubectl config view --minify --flatten  > ~/kubeconfig.yaml
 ```
 
-Transfer this file to the client and create an ENV variable to point to it. Like this, updating the file path as appropriate:
+Transfer this file to the client and save it to your laptop's home directory in a file named `/.kube/config`. For example, you could use `scp` if your laptop is a Mac or Linux machine:
 
 ```bash
-export KUBECONFIG=~/dev/pi5cluster/k8s/pi-kubeconfig
+scp pi1.local:kubeconfig.yaml ~/.kube/config 
 ```
 
 Edit the kubeconfig and update the `server` line so it points to one of the cluster machines.
 
-Now you can run kubectl commands against the cluster. If you want, you can change the namespace of the current context so you don't have to type `--namespace` over and over again in your commands
-
 ```bash
-kubectl config set-context --current --namespace=redpanda
-# switch back to the default namespace:
-kubectl config set-context --current --namespace=default
+nano ~/.kube/config
 ```
 
-## RedPanda (Kafka)
-
-[Deploy a Local Development Cluster with kind or minikube | Redpanda Docs](https://docs.redpanda.com/current/deploy/deployment-option/self-hosted/kubernetes/local-guide/)
-
-Copied and pasted here to make it easier to define a namespace.
-
-**This command will make it so we don't have to specify a namespace in every kubectl command below:**
-
-```bash
-kubectl config set-context --current --namespace=redpanda
+```yaml
+- cluster:
+    certificate-authority-data: ...
+    server: https://192.168.87.101:16443
 ```
 
-## Deploy Redpanda and Redpanda Console
+Replace the above with the IP address of your pi1.
 
-In this step, you deploy Redpanda with self-signed TLS certificates. Redpanda Console is included as a subchart in the Redpanda Helm chart.
+Now you can run kubectl commands against the cluster. 
 
-- Helm + Operator
+```bash
+kubectl get nodes
+```
 
-- Helm
-1. Make sure that you have permission to install custom resource definitions (CRDs):
-   
-   ```bash
-   kubectl auth can-i create CustomResourceDefinition --all-namespaces
-   ```
-   
-   
-   
-   You should see `yes` in the output.
-   
-   You need these cluster-level permissions to install [cert-manager](https://cert-manager.io/docs/) and Redpanda Operator CRDs in the next steps.
+To avoid security warnings about your kube config, you can change its permissions as follows:
 
-2. Install [cert-manager](https://cert-manager.io/docs/installation/helm/) using Helm:
-   
-   ```bash
-   helm repo add jetstack https://charts.jetstack.io
-   helm repo update
-   helm install cert-manager jetstack/cert-manager --set installCRDs=true --namespace cert-manager --create-namespace
-   ```
-   
-   
-   
-   TLS is enabled by default. The Redpanda Helm chart uses cert-manager to manage TLS certificates by default.
+```bash
+chmod 600 ~/.kube/config
+```
 
-3. Install the Redpanda Operator custom resource definitions (CRDs):
-   
-   ```bash
-   kubectl kustomize "https://github.com/redpanda-data/redpanda-operator//src/go/k8s/config/crd?ref=v2.1.14-23.3.4" \
-      | kubectl apply -f -
-   ```
-   
-   
 
-4. Deploy the Redpanda Operator:
-   
-   ```bash
-   helm repo add redpanda https://charts.redpanda.com
-   helm upgrade --install redpanda-controller redpanda/operator \
-    --set image.tag=v2.1.14-23.3.4 \
-    --create-namespace
-   ```
-   
-   
-   
-   If you already have Flux installed and you want it to continue managing resources across the entire cluster, use the `--set enableHelmControllers=false` flag. This flag prevents the Redpanda Operator from deploying its own set of Helm controllers that may conflict with those installed with Flux.
 
-5. Ensure that the Deployment is successfully rolled out:
-   
-   ```bash
-   kubectl rollout status --watch deployment/redpanda-controller-operator
-   ```
-   
-   
-   
-   deployment "redpanda-controller-operator" successfully rolled out
+#### Install k9s
 
-6. Install a [Redpanda custom resource](https://docs.redpanda.com/current/reference/k-crd/) in the same namespace as the Redpanda Operator:
-   
-   `redpanda-cluster.yaml`
-   
-   ```yaml
-   apiVersion: cluster.redpanda.com/v1alpha1
-   kind: Redpanda
-   metadata:
-    name: redpanda
-   spec:
-    chartRef: {}
-    clusterSpec:
-      external:
-        domain: customredpandadomain.local
-      statefulset:
-        initContainers:
-          setDataDirOwnership:
-            enabled: true
-   ```
-   
-   
-   
-   ```bash
-   kubectl apply -f redpanda-cluster.yaml
-   ```
-   
-   
+K9s is an excellent terminal application for visually managing all aspects of your Kubernetes cluster. Though not required, it is a recommended tool that's easy to [install](https://k9scli.io/topics/install/). It will work correctly as long as `kubectl` is setup and working.
 
-7. Wait for the Redpanda Operator to deploy Redpanda using the Helm chart:
-   
-   ```bash
-   kubectl get redpanda --watch
-   ```
-   
-   
-   
-   NAME       READY   STATUS
-   redpanda   True    Redpanda reconciliation succeeded
-   
-   This step may take a few minutes. You can watch for new Pods to make sure that the deployment is progressing:
-   
-   ```bash
-   kubectl get pod
-   ```
-   
-   
-   
-   If it’s taking too long, see [Troubleshoot](https://docs.redpanda.com/current/deploy/deployment-option/self-hosted/kubernetes/local-guide/#troubleshoot).
 
-## Start streaming
-
-Each Redpanda broker comes with `rpk`, which is a CLI tool for connecting to and interacting with Redpanda brokers. You can use `rpk` inside one of the Redpanda broker’s Docker containers to create a topic, produce messages to it, and consume messages from it.
-
-1. Create an alias to simplify the `rpk` commands:
-   
-   ```bash
-   alias internal-rpk="kubectl exec -i -t redpanda-0 -c redpanda -- rpk"
-   ```
-   
-   
-
-2. Create a topic called `twitch-chat`:
-   
-   - Helm + Operator
-   
-   - Helm
-
-3. Create a [Topic resource](https://docs.redpanda.com/current/manage/kubernetes/k-manage-topics/):
-   
-   `topic.yaml`
-   
-   ```yaml
-   apiVersion: cluster.redpanda.com/v1alpha1
-   kind: Topic
-   metadata:
-    name: twitch-chat
-   spec:
-    kafkaApiSpec:
-      brokers:
-        - "redpanda-0.redpanda.<namespace>.svc.cluster.local:9093"
-        - "redpanda-1.redpanda.<namespace>.svc.cluster.local:9093"
-        - "redpanda-2.redpanda.<namespace>.svc.cluster.local:9093"
-      tls:
-        caCertSecretRef:
-          name: "redpanda-default-cert"
-          key: "ca.crt"
-   ```
-   
-   
-
-4. Apply the Topic resource in the same namespace as your Redpanda cluster:
-   
-   ```bash
-   kubectl apply -f topic.yaml
-   ```
-   
-   
-
-5. Check the logs of the Redpanda Operator to confirm that the topic was created:
-   
-   ```bash
-   kubectl logs -l app.kubernetes.io/name=operator -c manager
-   ```
-   
-   
-   
-   You should see that the Redpanda Operator reconciled the Topic resource.
-   
-   Example output
-   
-   
-
-6. Describe the topic:
-   
-   ```bash
-   internal-rpk topic describe twitch-chat
-   ```
-   
-   
-   
-   Expected output:
-
-7. Produce a message to the topic:
-   
-   ```bash
-   internal-rpk topic produce twitch-chat
-   ```
-   
-   
-
-8. Type a message, then press Enter:
-   
-   ```text
-   Pandas are fabulous!
-   ```
-   
-   
-   
-   Example output:
-   
-   ```text
-   Produced to partition 0 at offset 0 with timestamp 1663282629789.
-   ```
-   
-   
-
-9. Press Ctrl+C to finish producing messages to the topic.
-
-10. Consume one message from the topic:
-    
-    ```bash
-    internal-rpk topic consume twitch-chat --num 1
-    ```
 
 # Getting Ingress Working
 
 ## MetalLB
 
-This will be used simply to provide an external IP to the HAProxy Kubernetes Ingress service
+This will be used simply to provide an external IP to the Kubernetes Ingress service
 
 ```bash
 helm repo add metallb https://metallb.github.io/metallb
@@ -321,6 +215,8 @@ helm repo update
 helm install metallb metallb/metallb --create-namespace \
 --namespace metallb-system
 ```
+
+Wait for all resources to be created.
 
 `metallb-ip-pool.yaml`:
 
@@ -354,22 +250,19 @@ spec:
   - default-pool
 ```
 
-## HAProxy
-
-HA Proxy will do TLS termination, routing, and load balancing
-
 ```bash
-helm repo add haproxytech https://haproxytech.github.io/helm-charts
-helm repo update
-helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
-  --create-namespace \
-  --namespace haproxy-controller \
-  --set controller.ingressClass=null
+kubectl apply -f metallb-l2adv.yaml
 ```
 
-### Set HAProxy to be of type LoadBalancer
 
-`values.yaml`:
+
+## Voyager (HAProxy)
+
+As recommended in the [VerneMQ documentation](https://docs.vernemq.com/guides/vernemq-on-kubernetes), we need an ingress controller that supports TCP load balancing based on source IP hash as well as TLS termination. We'll use [Voyager](https://github.com/voyagermesh/voyager), which wraps HAProxy and allows for a simple configuration of both of these. However, Voyager requires a license key and has unclear pricing and usage terms. Given this, we'll continue to explore other options such as [Envoy Gateway](<Envoy Gateway.md>) as they become more mature.
+
+### Install Voyager
+
+Following the [Voyager setup documentation](https://voyagermesh.com/docs/v2023.9.18/setup/install/voyager/) and first obtain a license file. Then, create the following `values.yaml` so that Voyager can obtain an external IP address through the metallb load balancer:
 
 ```yaml
 controller:
@@ -377,17 +270,30 @@ controller:
     type: LoadBalancer
 ```
 
+
+
+Install Voyager via Helm, applying the above values.yaml.
+
 ```bash
-haproxy % helm upgrade haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
-  --create-namespace \
-  --namespace haproxy-controller \
-  --set controller.ingressClass=null \
+export provider=metallb
+helm install voyager oci://ghcr.io/appscode-charts/voyager \
+  --version v2023.9.18 \
+  --namespace voyager --create-namespace \
+  --set cloudProvider=$provider \
+  --set-file license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug \
   -f values.yaml
 ```
 
-## CertManager
+Replace `/path/to/the/license.txt` with the proper path to your license file. (Also, you can check ghcr.io/appscode-charts/voyager to see if there is a newer version).
 
-CertManager handles automatic provisioning of LetsEncrypt certs
+
+
+
+
+## cert-manager
+
+CertManager handles automatic provisioning of LetsEncrypt certificates, which are useful for a number of things inside your K8s cluster. We'll use them to enable https and mqtts connections. 
 
 ```bash
 helm repo add jetstack https://charts.jetstack.io
@@ -398,6 +304,8 @@ helm install cert-manager jetstack/cert-manager \
   --create-namespace
 kubectl create secret generic cloudflare-api-token-secret --from-literal=api-token='YOUR_CLOUDFLARE_API_TOKEN' -n cert-manager
 ```
+
+In the above, replace `YOUR_CLOUDFLARE_API_TOKEN` by retrieving your Cloudflare API token from the [Cloudflare Dashboard](https://dash.cloudflare.com/). This assumes you're using Cloudflare for your nameservers. If you're not, you'll need to setup a different solver by following [certmanager documentation](https://cert-manager.io/docs/configuration/acme/dns01/).
 
 Setup a ClusterIssuer. `letsencrypt-clusterissuer.yaml`:
 
@@ -427,7 +335,9 @@ spec:
 kubectl apply -f letsencrypt-clusterissuer.yaml
 ```
 
-The above assumes you're using Cloudflare for your nameservers. If you're not, you'll need to setup a different solver by following [certmanager documentation](https://cert-manager.io/docs/configuration/acme/dns01/)
+In the above, you may want to start with the Staging URL until you've verified that you're able to successfully obtain valid certificates. This avoids any rate limiting you might experience through the Production letsencrypt URL. These staging certificates won't work when you try to access a secure (https) route in your K8s cluster, so once you've confirmed you can successfully obtain a cert you should switch to the Production URL and apply the YAML again.
+
+HAProxy (Voyager) will automaticalyl request a certificate for you through this issuer when you setup your Ingress below.
 
 ### Test it out with a simple HelloWorld service
 
@@ -484,18 +394,20 @@ kubectl apply -f hello-service.yaml
 
 (At this point you can access the hello-world web app by first port forwarding from your Service and then hitting localhost. But port forwarding is temporary.)
 
-Setup an Ingress for this service that uses the letsencrypt-issuer. `hello-world-ingress.yaml`:
+Setup an Ingress for this service that uses the letsencrypt-issuer. 
+
+`voyager-ingress.yaml`:
 
 ```yaml
 ---
-apiVersion: networking.k8s.io/v1
+apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
-  name: hello-world-ingress
+  name: default-ingress
+  namespace: default
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-issuer" 
+    cert-manager.io/cluster-issuer: "letsencrypt-issuer"
 spec:
-  ingressClassName: haproxy
   tls:
   - hosts:
       - test.example.com
@@ -504,9 +416,7 @@ spec:
   - host: test.example.com
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
+      - backend:
           service:
             name: hello-world-service
             port:
@@ -514,12 +424,12 @@ spec:
 ```
 
 ```bash
-kubectl apply -f hello-world-ingress.yaml
+kubectl apply -f voyager-ingress.yaml
 ```
 
 In the above, replace test.example.com with your domain. This will automatically create a new CertificateRequest, which should result in a new Certificate if everything was configured correctly. It may take a few minutes, but you should see a successful CertificateRequest, Certificate, and Secret all setup in your cluster.
 
-To test, you'll likely need to setup your haproxy-kubernetes-ingress external IP in your `/etc/hosts` file by adding a line that looks like this:
+To test, you'll likely need to setup your voyager-default-ingress external IP in your `/etc/hosts` file by adding a line that looks like this:
 
 ```
 192.168.87.250  test.edge-lab.dev
@@ -533,75 +443,28 @@ curl https://test.example.com
 
 This should return the html from the hello-world-service. You should also be able to access this from your browser.
 
-But even after all this, your service won't be accessible from a machine that isn't on your edge-lab subnet (or explicitly routing to your subnet as configured above).
+But even after all this, your service won't be accessible from a machine that isn't on your edge-lab subnet (or explicitly routing to your subnet as configured above). To enable outside access, there are several options:
 
-## Envoy Gateway Instead
+- Setup port 80 forwarding from your home router to your pi0 router and then on to your K8s voyager-default-ingress IP address. Finally, configure DNS for your hostname.
+- **Recommended:** Establish a [cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/). Follow the instructions in the documentation, and when connecting an application, the configuration should look similar to this, but using your own Cloudflare-managed domain:
+  ![CloudflareTunnelConfig](../media/CloudflareTunnelConfig.png)
 
-Configuring TCP routing and source (IP) hash load balancing with HAProxy doesn't seem straightforward or aligned yet with the new K8s Gateway API specification. Instead, let's try out Envoy Gateway.
 
-[TCP Routing | Envoy Gateway](https://gateway.envoyproxy.io/v0.6.0/user/tcp-routing/)
 
-Installation of the latest release:
+### Netdata monitoring in K8s
+
+On one of the nodes, run NetData following the instructions in the [Netdata documentation](https://learn.netdata.cloud/docs/netdata-agent/installation/docker). 
+
+With the following, netdata will monitor each of your K8s nodes, including auto-discovery and monitoring of VerneMQ, even across namespaces:
 
 ```bash
-helm install eg oci://docker.io/envoyproxy/gateway-helm --version v0.0.0-latest -n envoy-gateway-system --create-namespace
+helm repo add netdata https://netdata.github.io/helmchart/
+helm install netdata netdata/netdata -n netdata --create-namespace
 ```
 
-`gateway-class.yaml`:
+Follow the instructions after installation to identify the IP and port of your netdata dashboards. I found them at: `http://<pi-machine-IP>:19999`
 
-```yaml
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: envoy-gateway
-spec:
-  controllerName: gateway.envoyproxy.io/gatewayclass-controller
-```
-
-`vernemq-gateway.yaml`:
-
-```yaml
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: vernemq-gateway
-  namespace: vernemq
-spec:
-  gatewayClassName: envoy-gateway
-  listeners:
-  - name: vernemq-listener
-    protocol: TCP
-    port: 1883
-    allowedRoutes:
-      kinds:
-      - kind: TCPRoute
-```
-
-`vernemq-tcproute.yaml`:
-
-```yaml
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: TCPRoute
-metadata:
-  name: vernemq-route
-  namespace: vernemq
-spec:
-  parentRefs:
-  - name: vernemq-gateway
-    namespace: vernemq
-  rules:
-  - backendRefs:
-    - group: ""
-      kind: Service
-      name: my-vernemq
-      port: 1883
-```
-
-But I've found out that load balancing by source IP hash is not yet implemented in Envoy Gateway. [Adding BTP support for TCPRoute · Issue #2880 · envoyproxy/gateway · GitHub](https://github.com/envoyproxy/gateway/issues/2880)
-
-### Prometheus
-
-[Getting Started - Prometheus Operator](https://prometheus-operator.dev/docs/user-guides/getting-started/)
+Each node has its own dashboard but hopefully we can find a way to combine them.
 
 ### Curl / Troubleshoot
 

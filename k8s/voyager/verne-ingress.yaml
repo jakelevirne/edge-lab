@@ -8,7 +8,7 @@ metadata:
 
 spec:
   rules:
-  - host: test.edge-lab.dev
+  - host: mqtt.edge-lab.dev
     tcp:
       port: 1883
       backend:

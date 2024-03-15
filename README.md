@@ -11,21 +11,14 @@ The motivation behind this lab is to explore and learn the tools for handling re
 ## Contents
 
 * [Buying or Making a Rack for Your Cluster](<docs/Rack.md>)
-
 * [Building the Raspberry Pi Cluster](<docs/Pi Cluster.md>)
-
-* [Installing Kubernetes](<docs/Kubernetes.md>)
-
+* [Securing the Cluster](<docs/Secure Cluster.md>)
 * [Setting Up the Storage Server](<docs/Storage Server.md>)
-
-* [Scripting the Pi Cluster for Remote Operations](<docs/Ansible.md>)
-
-* Installing Kafka and MQTT
-
-* Installing ClickHouse
-
-* Streaming Sample Real-time Data
-
+* [Installing Kubernetes](<docs/Kubernetes.md>)
+* [Using Ansible to Script the Pi Cluster for Remote Operations](<docs/Ansible.md>)
+* [Deploying the VerneMQ MQTT Broker](<docs/VerneMQ.md>)
+* [Setting Up Fluvio for Data Stream Processing](docs/Fluvio.md)
+* Testing with Sample Data
 * Querying and Analyzing Real-time Data
-
 * Building Reactive Services
+

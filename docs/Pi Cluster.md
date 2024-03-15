@@ -30,7 +30,7 @@ Here we'll build a cluster of four Raspberry Pis. The cluster will have it's own
 
 [^1]: [ChatGPT-What's a subnet? What does 192.168.86.0/24 mean? Is there something special about 192.168?](https://chat.openai.com/share/d146774e-6da8-48c8-8bc5-88791f5e4ad4)
 
-## 
+
 
 ## Prepare Cluster
 
@@ -103,7 +103,7 @@ You'll need a location for storing your clean disk images. One option would be a
 
 Alternatively, you could setup an NFS share from your laptop. For more help, ask the [Edge Lab Assistant](https://chat.openai.com/g/g-CCcHNwSF9-edge-lab-assistant).
 
-### 
+
 
 ### Create a Clean Image
 
@@ -218,15 +218,12 @@ dhcp-range=192.168.87.11,192.168.87.99,255.255.255.0,24h
 # Reserved IPs
 # In general, I prefer using reserved IPs from a DHCP server rather than static IP addresses configured separately on each machine.
 sudo nano /etc/dnsmasq.conf
-# You'll need the MAC address of each Pi's ethernet interface.
+# You'll need the MAC address of each of YOUR Pi's ethernet interface.
 # Add lines that look like these. 
-# pi1
+
 dhcp-host=d8:3a:dd:f7:78:e0,192.168.87.101,pi1
-# pi2
 dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
-# pi3
 dhcp-host=d8:3a:dd:e9:d4:3e,192.168.87.103,pi3
-# data1
 dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
 
 # restart dnsmasq
@@ -345,77 +342,9 @@ journalctl -p err -b
 
 Now you can repeat all of the above steps for `pi2` and `pi3` or you can use the [nodes_reimage.yml](Ansibl.md#playbook-for-reimaging-pi1piN) Ansible script. 
 
-## 
-
-## Securing your cluster
-
-There are a number of things we can and should do to improve the security of our cluster and also the security of our home network. These should all be done for `imager0`..`imager3` as well.
-
-### Ensure SSH is set to require key-based authentication
-
-If you followed the instructions in this tutorial when creating your Pi images and when installing Ubuntu on `data1`, this should already be the case. But you can always check.
-
-On every machine in the cluster, run these commands to inspect.
-
-```bash
-sudo sshd -T | grep passwordauthentication
-sudo sshd -T | grep pubkeyauthentication
-```
-
-`passwordauthentication` should be `no` and `pubkeyauthentication` should be `yes`
-
-If that's not the case, edit `/etc/ssh/sshd_config` to set these correctly:
-
-```bash
-sudo nano /etc/ssh/sshd_config
-# Ensure these lines
-PubkeyAuthentication yes # Or not defined-- the default is yes
-PasswordAuthentication no
+ 
 
 
-# Then restart the SSH daemon
-sudo systemctl restart ssh
-```
-
-Once you make these changes, you'll only be able to SSH in to this machine using key based authentication. See [SSH Tips](<SSH Tips.md>) to get key based auth working before disabling password auth.
-
-### Ensure the pi user has a password
-
-On each machine in the cluster.
-
-```bash
-sudo passwd pi
-```
-
-Manage these passwords carefully, for example in a password manager.
-
-### Update sudoers configuration
-
-On each machine in the cluster, ensure that the NOPASSWD directive is NOT defined
-
-```bash
-sudo -l
-```
-
-If there's any output that looks like `(ALL) NOPASSWD: ALL` you'll need to update your sudoers configuration.
-
-### Disable the root user
-
-### Use Ansible vault
-
-### Setup a firewall to protect the home network
-
-### Setup unattended operating system updates
-
-### Regular monitoring and auditing
-
-### Use a passphrase on your private key
-
-## Setting Up Remote SSH with Cloudflare Tunnel
-
-[SSH · Cloudflare Zero Trust docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/)
-
-https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/
 
 ## Remotely Powering Up the Cluster
 
@@ -429,9 +358,7 @@ kasa discover
 kasa --host <ip address> <command>
 ```
 
-## Notes
 
-Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh.
 
 ### Switching to USB-Ethernet to connect to home network
 
@@ -458,11 +385,9 @@ sudo netfilter-persistent save
 
 ### Setting up pi0 as a wifi access point for lab network
 
-Setting up `wlan0` as a WiFi access point on pi0 will let us connect wifi devices like ESP32 boards directly to the edge-lab network.
+Setting up `wlan0` as a WiFi access point on pi0 will let us connect wifi devices like ESP32 boards directly to the edge-lab network. This will only work if you've switched to USB-Ethernet to connect to the home network, as instructed above.
 
-### 
-
-Remove the existing wireless and eth0 connections:
+First, remove the existing wireless and eth0 connections:
 
 ```bash
 nmcli con show
@@ -510,4 +435,12 @@ sudo iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
 sudo netfilter-persistent save
 ```
 
-Finally, verify your setup by connecting a device to your newly created WiFi network. Check that the device receives an IP address within the `192.168.87.0/24` range and has internet access.
+Finally, verify your setup by connecting a device to your newly created WiFi network. Check that the device receives an IP address within the `192.168.87.0/24` range and can access internet sites.
+
+
+
+
+
+## Notes
+
+Raspberry Pi Imager makes no changes to config.txt during customisation, but it does change cmdline.txt and it creates firstrun.sh.

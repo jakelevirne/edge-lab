@@ -72,7 +72,7 @@
           dhcp-host=d8:3a:dd:f7:77:d8,192.168.87.102,pi2
           # pi3
           dhcp-host=d8:3a:dd:e9:d4:3e,192.168.87.103,pi3
-          #data1
+          # data1
           dhcp-host=1c:69:7a:a2:6f:89,192.168.87.2,data1
         marker: "# {mark} ANSIBLE MANAGED BLOCK FOR DHCP RESERVATIONS"
         backup: yes

@@ -38,7 +38,7 @@ mosquitto_sub -h 192.168.87.101 -t #
 
 ### Netdata monitoring of Verne
 
-On one of the nodes, run NetData following the instructions in the [Netdata documentation](https://learn.netdata.cloud/docs/netdata-agent/installation/docker). When you then access the Netdata Agent Console via http://NODE:19999, you'll see on the right hand side that VerneMQ is automatically being monitored.
+When you then access the Netdata Agent Console via http://NODE:19999, you'll see on the right hand side that VerneMQ is automatically being monitored.
 
 ## Kubernetes VerneMQ Cluster Deployment
 
@@ -124,16 +124,3 @@ mosquitto_sub -h localhost -t your_topic -i my-client-id1 -u henry -P <password>
 mosquitto_pub -h localhost -t your_topic -m "foooodeyloodey" -i my-client-id2 -u henry -P 1234
 ```
 
-### Netdata monitoring in K8s
-
-With the following, netdata will monitor each of your K8s nodes, including auto-discovery and monitoring of VerneMQ, even across namespaces:
-
-```bash
-kubectl apply -f 00-namespace.yaml
-helm repo add netdata https://netdata.github.io/helmchart/
-helm install netdata netdata/netdata -n netdata
-```
-
-Follow the instructions after installation to identify the IP and port of your netdata dashboards. I found them at: `http://<pi-machine-IP>:19999`
-
-Each node has its own dashboard but hopefully we can find a way to combine them.
