@@ -114,6 +114,12 @@ If you now connect another MQTT client from a different device with a different 
 
 
 
+### Internet Ingress
+
+All of the above only makes Verne available to machines that have access to the "public" IP that the cluster loadbalancer makes available (e.g. 192.168.87.252). This is not a public internet IP address. To get internet MQTT traffic routed to our cluster, follow the steps in the [Internet Gateway](<Internet Gateway.md>) doc
+
+
+
 ### Netdata monitoring of Verne
 
 After installing Verne, Netdata should automatically start monitoring your MQTT broker cluster for you. If you access the Netdata Agent Console via http://<netdata-external-IP>:19999, you'll see on the right hand side of your Metrics a section called VerneMQ that includes stats such as mqtt connects, disconnects, subscribes, etc.
