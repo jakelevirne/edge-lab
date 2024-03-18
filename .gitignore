@@ -3,3 +3,4 @@
 **/*secret*
 **/*kubeconfig*
 **/voyager-license*
+k8s/netdata/values.yaml
