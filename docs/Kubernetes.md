@@ -473,3 +473,12 @@ Each node has its own dashboard but hopefully we can find a way to combine them.
 ```bash
 kubectl run mycurlpod --image=curlimages/curl -i --tty -- sh
 ```
+
+For a given Helm deployment, you can check the full helm-calculated manifest with the `--dry-run` and `--debug` flags. For example:
+
+```bash
+helm upgrade my-vernemq vernemq/vernemq -f values.yaml -n vernemq --dry-run --debug
+```
+
+This will give you a view into the merged configuration based on both the raw chart and your custom values.
+
