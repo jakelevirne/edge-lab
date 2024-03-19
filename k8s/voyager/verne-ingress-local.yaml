@@ -1,11 +1,10 @@
 apiVersion: voyager.appscode.com/v1
 kind: Ingress
 metadata:
-  name: verne-ingress
+  name: verne-ingress-local
   namespace: vernemq
   annotations:
     ingress.appscode.com/keep-source-ip: "true"
-    ingress.appscode.com/accept-proxy: "true"
 
 spec:
   rules:

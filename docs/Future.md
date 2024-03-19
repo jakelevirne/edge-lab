@@ -2,6 +2,8 @@
 
 - Use network boot instead of SD cards for machine re-imaging
 - Ensure IPv6 is all fully configured
+- Ensure the DigitalOcean cloud firewall rule gets updated with a new IP address if the home internet public IP ever changes
+- If the DigitalOcean cloud vm ever fails, have an automatic failover that points the reserved IP address to a new, working VM
 
 ## Proxmox
 
