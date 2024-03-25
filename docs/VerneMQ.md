@@ -126,6 +126,14 @@ After installing Verne, Netdata should automatically start monitoring your MQTT 
 
 
 
+### Switch from Hostpath Storage to a Local Persistent Volume
+
+From the [K8s blog](https://kubernetes.io/blog/2019/04/04/kubernetes-1.14-local-persistent-volumes-ga/):
+
+> The biggest difference is that the Kubernetes scheduler understands which node a Local Persistent Volume belongs to. With HostPath volumes, a pod referencing a HostPath volume may be moved by the scheduler to a different node resulting in data loss. But with Local Persistent Volumes, the Kubernetes scheduler ensures that a pod using a Local Persistent Volume is always scheduled to the same node
+
+
+
 ### Authentication
 
 At any point, it's possible to live change whether anonymous authentication is allowed.

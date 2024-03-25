@@ -402,6 +402,10 @@ sudo nmcli connection add con-name 'bridge-con' ifname br0 type bridge ipv4.meth
 sudo nmcli con modify "bridge-con" ipv4.addresses 192.168.87.1/24 ipv4.method manual
 sudo nmcli connection add con-name 'lab-eth-con' ifname eth0 type bridge-slave master 'bridge-con' connection.autoconnect yes
 sudo nmcli connection add con-name 'lab-hotspot' ifname wlan0 type wifi slave-type bridge master 'bridge-con' wifi.band a wifi.channel 153 wifi.mode ap wifi.ssid <yourlabssid> wifi-sec.key-mgmt wpa-psk wifi-sec.psk <yourpassword>
+# Here is a command to modify the lab-hotspot configuration to enforce AES, otherwise it uses TKIP
+sudo nmcli connection modify 'lab-hotspot' 802-11-wireless-security.proto rsn 802-11-wireless-security.pairwise ccmp 802-11-wireless-security.group ccmp
+# And one to switch to 2.4GHz for the best compatibility, on channel 1
+sudo nmcli connection modify 'lab-hotspot' 802-11-wireless.band bg 802-11-wireless.channel 1
 sudo systemctl restart NetworkManager
 ```
 
